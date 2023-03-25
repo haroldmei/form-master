@@ -1,5 +1,4 @@
 from docx.api import Document
-from pprint import pprint
 from glob import glob
 
 import pandas as pd

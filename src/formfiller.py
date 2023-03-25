@@ -214,7 +214,6 @@ def fill_your_qualifications():
         driver.find_element("xpath", overall_score).send_keys('7')
         #upload english test result
     else:
-        set_value(taken_english_test).click()
         driver.find_element("xpath", no_english_test).click()
 
         scheduled_test = '//*[@id="IPQ_APONEL10A"]'
@@ -317,6 +316,7 @@ def fill_form():
         return new_application()
     elif title == 'Declaration':
         print('Please confirm.')
+        new_application()
     else:
         pass
     
