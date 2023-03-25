@@ -16,6 +16,7 @@ from etl import load
 import os
 import re
 import time
+import fire
 
 ## new session global
 driver = None 
@@ -398,14 +399,15 @@ def run(dir = default_dir):
         password = getpass()
 
     students = load(dir)
-    options = FirefoxOptions()
-    options.set_preference("network.protocol-handler.external-default", False)
-    options.set_preference("network.protocol-handler.expose-all", True)
-    options.set_preference("network.protocol-handler.warn-external-default", False)
+    print(students)
     
     if is_win:
         driver = webdriver.Chrome()
     else:
+        options = FirefoxOptions()
+        options.set_preference("network.protocol-handler.external-default", False)
+        options.set_preference("network.protocol-handler.expose-all", True)
+        options.set_preference("network.protocol-handler.warn-external-default", False)
         driver = Firefox(options=options)
     
     driver.get('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn')
@@ -421,4 +423,4 @@ def run(dir = default_dir):
         print('failing exit')
 
 if __name__ == '__main__':
-    run()
+    fire(run)

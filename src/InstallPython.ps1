@@ -3,7 +3,7 @@ $behindFirewall = $true #Set to $true if you are at the office, and $false other
 $python_url = 'https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe' #Change URL if you need a different version
 $installPython = $true #Set to false if Python is installed, and you only want to install/update libraries
 #$proxy = 'http://0.0.0.0:8080' #proxy (not needed any more)
-$list_libraries = "pandas pynput selenium python-docx" #list of libraries to install or update
+$list_libraries = "pandas pynput selenium python-docx fire" #list of libraries to install or update
 
 if ($installPython) {
 	#Specify the target location in the user's Downloads folder
@@ -26,5 +26,5 @@ $proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host fil
 #$proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host files.pythonhosted.org --proxy=' + $proxy} else {''}
 
 Start-Process -FilePath "python" -ArgumentList "-m", "pip", "install", "--upgrade", "pip", $proxy_chain -wait #First upgrade pip
-$command = 'python -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
-Invoke-Expression $command
+$command = 'C:\Python\python -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
+Invoke-Expression $commanddriver = webdriver.Chrome()

@@ -96,8 +96,6 @@ def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/�
     df_application['CRICOS'] = df_application['CRICOS'].apply(lambda a: extract_eng(a))
     df_application['Commencement Date(mm/yyyy)'] = df_application['Commencement Date(mm/yyyy)'].apply(lambda a: extract_eng(a))
 
-    #print(data)
-    #print(df_edu, df_application)
     return data, df_edu, df_application, df_personal
 
 def load_ielts(app_file = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/'):
