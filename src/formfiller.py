@@ -403,9 +403,11 @@ def run(dir = default_dir):
     options.set_preference("network.protocol-handler.expose-all", True)
     options.set_preference("network.protocol-handler.warn-external-default", False)
     
-    driver = Firefox(options=options)
-    #service = Service(executable_path="/usr/bin/chromedriver")
-    #driver = webdriver.Chrome(service=service, service_log_path='/home/hmei/programming/day-tools/formfiller/log')
+    if is_win:
+        driver = webdriver.Chrome()
+    else:
+        driver = Firefox(options=options)
+    
     driver.get('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn')
 
     wait = WebDriverWait(driver, 100)
