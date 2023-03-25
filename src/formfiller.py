@@ -30,7 +30,7 @@ def create_profile():
 
     personal_info = students[-1][0]
     
-    print('Now processing: ', personal_info)
+    #print('Now processing: ', personal_info)
     given_name =  '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[1]/div/input'
     set_value(given_name, personal_info['Given Name'])
     
@@ -50,10 +50,10 @@ def create_profile():
     set_value(username, personal_info["Student's Email"])
     
     password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[7]/div/input'
-    set_value(password, personal_info['DOB (dd/mm/yyyy)']) # default use email as username
+    set_value(password, f"a{personal_info['DOB (dd/mm/yyyy)']}") # default use email as username
     
     confirmed_password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[8]/div/input'
-    set_value(confirmed_password, personal_info['DOB (dd/mm/yyyy)'])
+    set_value(confirmed_password, f"a{personal_info['DOB (dd/mm/yyyy)']}")
     
     tnc = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[9]/div/label/input[2]'
     driver.find_element("xpath", tnc).click()
@@ -101,13 +101,13 @@ def fill_personal_info():
     officialname='/html/body/div[1]/form/div[4]/div[2]/div/div/div[6]/div/input'
     gender = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[7]/div/div/div/div/input'
     dob = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[8]/div/div/input'
-    set_value(title, 'Mr' if personal_info['Gender'] == 'Male' else 'Miss')
+    driver.find_element("xpath", title).send_keys('Mr' if personal_info['Gender'] == 'Male' else 'Miss')
     driver.find_element("xpath", title).send_keys(Keys.RETURN)
     set_value(givenname1, personal_info['Given Name'])
     set_value(familyname, personal_info['Family Name'])
     set_value(akaname, personal_info['Given Name'])
     set_value(officialname, personal_info['Given Name'])
-    set_value(gender, personal_info['Gender'])
+    driver.find_element("xpath", gender).send_keys(personal_info['Gender'])
     driver.find_element("xpath", gender).send_keys(Keys.RETURN)
     set_value(dob, personal_info['DOB (dd/mm/yyyy)'])
     
@@ -119,7 +119,7 @@ def fill_personal_info():
     province =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[7]/div/input'
     postcode =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[8]/div/input'
     check_address_same = '/html/body/div[1]/form/div[7]/div[2]/div/div/div[9]/div[2]/div/label/input'
-    set_value(country, 'China (Excludes SARS and Taiwan)')
+    driver.find_element("xpath", country).send_keys('China (Excludes SARS and Taiwan)')
     driver.find_element("xpath", country).send_keys(Keys.RETURN)
     set_value(addressline1, personal_info['line1'])
     set_value(addressline2, personal_info['line2'])
@@ -136,7 +136,7 @@ def fill_personal_info():
     parent_town = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[6]/div/input'
     parent_state = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[7]/div/input'
     parent_postcode = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[8]/div/input'
-    set_value(parent_country, 'China (Excludes SARS and Taiwan)')
+    driver.find_element("xpath", parent_country).send_keys('China (Excludes SARS and Taiwan)')
     driver.find_element("xpath", parent_country).send_keys(Keys.RETURN)
     set_value(parent_address1, personal_info['line1'])
     set_value(parent_address2, personal_info['line2'])
@@ -156,15 +156,15 @@ def fill_personal_info():
     nationality = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
     is_aboriginal = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/div/div/div/input'
     hometongue = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/div/div/div/input'
-    set_value(born_country, 'China (Excludes SARS and Taiwan)')
+    driver.find_element("xpath", born_country).send_keys('China (Excludes SARS and Taiwan)')
     driver.find_element("xpath", born_country).send_keys(Keys.RETURN)
-    set_value(au_citizenship, 'Other (non resident)')
+    driver.find_element("xpath", au_citizenship).send_keys('Other (non resident)')
     driver.find_element("xpath", au_citizenship).send_keys(Keys.RETURN)
-    set_value(nationality, 'China (Excludes SARS and Taiwan)')
+    driver.find_element("xpath", nationality).send_keys('China (Excludes SARS and Taiwan)')
     driver.find_element("xpath", nationality).send_keys(Keys.RETURN)
-    set_value(is_aboriginal, 'Neither Aboriginal nor Torres Strait Islander')
+    driver.find_element("xpath", is_aboriginal).send_keys('Neither Aboriginal nor Torres Strait Islander')
     driver.find_element("xpath", is_aboriginal).send_keys(Keys.RETURN)
-    set_value(hometongue, 'Mandarin')
+    driver.find_element("xpath", hometongue).send_keys('Mandarin')
     driver.find_element("xpath", hometongue).send_keys(Keys.RETURN)
     
     current_at_usyd = '//*[@id="IPQ_APONPAPB"]'
@@ -204,7 +204,7 @@ def fill_your_qualifications():
         driver.find_element("xpath", taken_english_test).click()
 
         test_type = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[3]/div/div/div/div/input'
-        set_value(test_type, 'IELTS')
+        driver.find_element("xpath", test_type).send_keys('IELTS')
         driver.find_element("xpath", test_type).send_keys(Keys.RETURN)
 
         test_date = '//*[@id="IPQ_APONEL4"]'
@@ -246,7 +246,7 @@ def fill_your_qualifications():
     
     #high qualification
     edu_level = '/html/body/div[1]/form/div[8]/div[2]/div/div/div/div/div/div/div/input'
-    set_value(edu_level, 'Secondary Qualification')
+    driver.find_element("xpath", edu_level).send_keys('Secondary Qualification')
     driver.find_element("xpath", edu_level).send_keys(Keys.RETURN)
     
     #upload you docs
@@ -261,7 +261,7 @@ def fill_your_qualifications():
     year = re.search('20\d\d', secondary_edu[0])
     if year:
         secondary_qual_year = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[3]/div/div/div/div/input'
-        set_value(secondary_qual_year, year.group())
+        driver.find_element("xpath", secondary_qual_year).send_keys(year.group())
         driver.find_element("xpath", secondary_qual_year).send_keys(Keys.RETURN)
 
     secondary_qual_score = '//*[@id="IPQ_APMOTHRS"]'
@@ -270,14 +270,14 @@ def fill_your_qualifications():
     # Academic school studies
     if False:
         academic_qual_name = ''
-        set_value(academic_qual_name, 'Bachelors degree')
+        driver.find_element("xpath", academic_qual_name).send_keys('Bachelors degree')
         driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
         academic_qual_course = ''
         set_value(academic_qual_course, '01/Mar/2020')
         academic_qual_institution = ''
         set_value(academic_qual_institution).send_keys('01/Mar/2020')
         academic_qual_country = ''
-        set_value(academic_qual_country, 'Australia')
+        driver.find_element("xpath", academic_qual_name).send_keys('Australia')
         driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
         academic_qual_start_date = ''
         set_value(academic_qual_start_date, '01/Mar/2020')
@@ -329,11 +329,12 @@ def new_application():
     driver.close()
     driver.switch_to.window(main_application_handle)
     driver.get(manage_applications_url)
+    students.pop()
     if not len(students):
         print('Congrats, you finished processing. ')
         return False
     
-    students.pop()
+    print('Now processing: ', students[-1][0])
     return True
 
 def search_course():
@@ -377,7 +378,6 @@ def on_click(x, y, button, pressed):
 
         # create profile
         elif re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_ipp_lgn.login?.+', url):
-            print('create profile ...')
             create_profile()
             #new_application()
 
@@ -386,11 +386,18 @@ def on_click(x, y, button, pressed):
             pass
 
 def run(dir = default_dir):
+    from getpass import getpass
+
     global students
     global driver
 
-    students = load(dir)
+    username = os.getenv('SYD_USER', '')
+    password = os.getenv('SYD_PASS', '')
+    if not username:
+        username = input('Username: ')
+        password = getpass()
 
+    students = load(dir)
     options = FirefoxOptions()
     options.set_preference("network.protocol-handler.external-default", False)
     options.set_preference("network.protocol-handler.expose-all", True)
@@ -404,7 +411,7 @@ def run(dir = default_dir):
     wait = WebDriverWait(driver, 100)
     wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-    login_session()
+    login_session(username, password)
     try:
         with Listener(on_click=on_click) as listener:
             listener.join()
