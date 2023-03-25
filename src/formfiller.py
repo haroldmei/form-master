@@ -423,4 +423,4 @@ def run(dir = default_dir):
         print('failing exit')
 
 if __name__ == '__main__':
-    fire(run)
+    fire.Fire(run)
