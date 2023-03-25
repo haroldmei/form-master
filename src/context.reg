@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplication]
+@="Student Application"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplication\command]
+@="\"C:\\Python\\python.exe\" \"C:\\Users\\harol\\form-master\\src\\formfiller.py\" \"%V\""
