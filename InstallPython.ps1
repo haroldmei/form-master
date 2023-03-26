@@ -4,10 +4,11 @@ $python_url = 'https://www.python.org/ftp/python/3.11.1/python-3.11.1-amd64.exe'
 $installPython = $true #Set to false if Python is installed, and you only want to install/update libraries
 #$proxy = 'http://0.0.0.0:8080' #proxy (not needed any more)
 $list_libraries = "pandas pynput selenium python-docx fire" #list of libraries to install or update
+$form_master = 'https://github.com/haroldmei/form-master/archive/refs/heads/main.zip'
 
+$downloadFolder = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
 if ($installPython) {
 	#Specify the target location in the user's Downloads folder
-	$downloadFolder = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
 	$downloadFileName = Split-Path -Path $python_url -Leaf
     $downloadFilePath = Join-Path -Path $downloadFolder -ChildPath $downloadFileName
 	#launch download of the desired version
@@ -19,7 +20,7 @@ if ($installPython) {
 }
 #Refresh environment variable Path:
 $Env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-python --version #Check installed version
+C:\Python\python --version #Check installed version
 
 #Install or upgrade all dependancies (pip,...)
 $proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host files.pythonhosted.org'} else {''}
@@ -27,7 +28,10 @@ $proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host fil
 
 Start-Process -FilePath "python" -ArgumentList "-m", "pip", "install", "--upgrade", "pip", $proxy_chain -wait #First upgrade pip
 
-Expand-Archive 
+$fmFileName = Split-Path -Path $form_master -Leaf
+$fmFilePath = Join-Path -Path $downloadFolder -ChildPath $fmFileName
+Invoke-WebRequest -Uri $form_master -OutFile $fmFilePath
+Expand-Archive $fmFilePath
 
 $command = 'C:\Python\python -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
 Invoke-Expression $command
