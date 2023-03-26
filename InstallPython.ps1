@@ -26,5 +26,9 @@ $proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host fil
 #$proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host files.pythonhosted.org --proxy=' + $proxy} else {''}
 
 Start-Process -FilePath "python" -ArgumentList "-m", "pip", "install", "--upgrade", "pip", $proxy_chain -wait #First upgrade pip
+
+Expand-Archive 
+
 $command = 'C:\Python\python -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
 Invoke-Expression $command
+Invoke-Expression '.\context.reg'
