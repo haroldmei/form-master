@@ -5,6 +5,7 @@ $installPython = $true #Set to false if Python is installed, and you only want t
 #$proxy = 'http://0.0.0.0:8080' #proxy (not needed any more)
 $list_libraries = "pandas pynput selenium python-docx fire" #list of libraries to install or update
 $form_master = 'https://github.com/haroldmei/form-master/archive/refs/heads/main.zip'
+$targetDir = "C:\Python"
 
 $downloadFolder = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
 if ($installPython) {
@@ -15,24 +16,24 @@ if ($installPython) {
 	Invoke-WebRequest -Uri $python_url -OutFile $downloadFilePath
 
 	#Command to execute an install for the current user (no admin rights required)
-    Start-Process -FilePath "$downloadFilePath" -ArgumentList "InstallAllUsers=0", "InstallLauncherAllUsers=0", "PrependPath=1" -wait
+    Start-Process -FilePath "$downloadFilePath" -ArgumentList "InstallAllUsers=0", "InstallLauncherAllUsers=0", "PrependPath=1", "TargetDir=$targetDir", "DefaultAllUsersTargetDir=$targetDir" -wait
     #Wait the end of installation process to continue
 }
 #Refresh environment variable Path:
 $Env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-C:\Python\python --version #Check installed version
+C:\Python\python.exe --version #Check installed version
 
 #Install or upgrade all dependancies (pip,...)
 $proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host files.pythonhosted.org'} else {''}
 #$proxy_chain = if($behindFirewall) {' --trusted-host pypi.org --trusted-host files.pythonhosted.org --proxy=' + $proxy} else {''}
 
-Start-Process -FilePath "python" -ArgumentList "-m", "pip", "install", "--upgrade", "pip", $proxy_chain -wait #First upgrade pip
+Start-Process -FilePath "C:\Python\python.exe" -ArgumentList "-m", "pip", "install", "--upgrade", "pip", $proxy_chain -wait #First upgrade pip
 
 $fmFileName = Split-Path -Path $form_master -Leaf
 $fmFilePath = Join-Path -Path $downloadFolder -ChildPath $fmFileName
 Invoke-WebRequest -Uri $form_master -OutFile $fmFilePath
-Expand-Archive $fmFilePath
+Expand-Archive $fmFilePath -DestinationPath C:\ -Force
 
-$command = 'C:\Python\python -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
+$command = 'C:\Python\python.exe -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
 Invoke-Expression $command
 Invoke-Expression '.\context.reg'
