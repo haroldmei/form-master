@@ -89,6 +89,12 @@ def set_value(key, val):
     global driver
     driver.find_element("xpath", key).clear()
     driver.find_element("xpath", key).send_keys(val)
+
+def get_country_code(country):
+    if country == 'UK':
+        return 'England'
+    else:
+        return country
     
 def fill_personal_info():
     personal_info = students[-1][0]
@@ -107,7 +113,7 @@ def fill_personal_info():
     set_value(givenname1, personal_info['Given Name'])
     set_value(familyname, personal_info['Family Name'])
     set_value(akaname, personal_info['Given Name'])
-    set_value(officialname, personal_info['Given Name'])
+    set_value(officialname, f"{personal_info['Given Name']} {personal_info['Family Name']}")
     driver.find_element("xpath", gender).send_keys(personal_info['Gender'])
     driver.find_element("xpath", gender).send_keys(Keys.RETURN)
     set_value(dob, personal_info['DOB (dd/mm/yyyy)'])
@@ -127,7 +133,9 @@ def fill_personal_info():
     set_value(addressline3, personal_info['line3'])
     set_value(city, personal_info['city'])
     set_value(province, personal_info['province'])
-    set_value(postcode, personal_info['Post Code'])
+    
+    post = personal_info['Post Code'] if re.search('\d+', personal_info['Post Code']) else '0000'
+    set_value(postcode, post)
     driver.find_element("xpath", check_address_same).click()
     
     parent_country = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[1]/div/div/div/div/input'
@@ -144,7 +152,7 @@ def fill_personal_info():
     set_value(parent_address3, personal_info['line3'])
     set_value(parent_town, personal_info['city'])
     set_value(parent_state, personal_info['province'])
-    set_value(parent_postcode, personal_info['Post Code'])
+    set_value(parent_postcode, post)
     
     phone = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[1]/div/input'
     mobile = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[2]/div/input'
@@ -171,11 +179,13 @@ def fill_personal_info():
     current_at_usyd = '//*[@id="IPQ_APONPAPB"]'
     current_student_usyd = '//*[@id="IPQ_APONLCES1B"]'
     current_enrolled_usyd = '//*[@id="IPQ_APONLCES3B"]'
-    fee_waiver = '//*[@id="IPQ_APONLEVV"]'
+    fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[1]/label/input'
+    no_fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[2]/label/input'
+    
     driver.find_element("xpath", current_at_usyd).click()
     driver.find_element("xpath", current_student_usyd).click()
     driver.find_element("xpath", current_enrolled_usyd).click()
-    driver.find_element("xpath", fee_waiver).click()
+    driver.find_element("xpath", no_fee_waiver).click()
     
 def fill_scholarships():
     print('>>> scholarship info: ')
@@ -268,30 +278,80 @@ def fill_your_qualifications():
     set_value(secondary_qual_score, secondary_edu[4])
 
     # Academic school studies
-    if False:
-        academic_qual_name = ''
+    if qualification.shape[0] > 1:
+        tertiary_edu = qualification.loc[1].values.flatten().tolist()
+
+        academic_qual_name = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[1]/div/div/div/div/input'
         driver.find_element("xpath", academic_qual_name).send_keys('Bachelors degree')
         driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
-        academic_qual_course = ''
-        set_value(academic_qual_course, '01/Mar/2020')
-        academic_qual_institution = ''
-        set_value(academic_qual_institution).send_keys('01/Mar/2020')
-        academic_qual_country = ''
-        driver.find_element("xpath", academic_qual_name).send_keys('Australia')
-        driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
-        academic_qual_start_date = ''
-        set_value(academic_qual_start_date, '01/Mar/2020')
-        academic_qual_end_date = ''
-        set_value(academic_qual_end_date, '01/Mar/2020')
-        academic_qual_length = ''
-        set_value(academic_qual_length, '01/Mar/2020')
-        academic_qual_grade = ''
-        set_value(academic_qual_grade, '01/Mar/2020')
-        academic_qual_completed = ''
+
+        academic_qual_course = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[2]/div/input'
+        set_value(academic_qual_course, tertiary_edu[2])
+
+        academic_qual_institution = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[3]/div/input'
+        set_value(academic_qual_institution, tertiary_edu[1])
+
+        academic_qual_country = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
+        driver.find_element("xpath", academic_qual_country).send_keys(get_country_code(tertiary_edu[3]))
+        driver.find_element("xpath", academic_qual_country).send_keys(Keys.RETURN)
+
+        academic_qual_start_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[5]/div/div/input'
+        set_value(academic_qual_start_date, tertiary_edu[0])
+
+        academic_qual_end_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[6]/div/div/input'
+        set_value(academic_qual_end_date, tertiary_edu[0])
+
+        academic_qual_length = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/input'
+        set_value(academic_qual_length, '')
+        
+        academic_qual_grade = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/input'
+        set_value(academic_qual_grade, tertiary_edu[4])
+
+        academic_qual_completed = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[9]/div/div[1]/label/input'
         driver.find_element("xpath", academic_qual_completed).click()
-        academic_qual_parttime = ''
+
+        academic_qual_parttime = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[10]/div/div[1]/label/input'
         driver.find_element("xpath", academic_qual_parttime).click()
 
+        if qualification.shape[0] > 2:
+            print('Add another qualification')
+            another_qual = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[11]/div/div/label/input'
+            driver.find_element("xpath", another_qual).click()
+
+            tertiary_edu = qualification.loc[2].values.flatten().tolist()
+
+            academic_qual_name = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[1]/div/div/div/div/input'
+            driver.find_element("xpath", academic_qual_name).send_keys('Bachelors degree')
+            driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
+
+            academic_qual_course = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[2]/div/input'
+            set_value(academic_qual_course, tertiary_edu[2])
+
+            academic_qual_institution = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[3]/div/input'
+            set_value(academic_qual_institution, tertiary_edu[1])
+
+            academic_qual_country = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[4]/div/div/div/div/input'
+            driver.find_element("xpath", academic_qual_country).send_keys(get_country_code(tertiary_edu[3]))
+            driver.find_element("xpath", academic_qual_country).send_keys(Keys.RETURN)
+
+            academic_qual_start_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[5]/div/div/input'
+            set_value(academic_qual_start_date, tertiary_edu[0])
+
+            academic_qual_end_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[6]/div/div/input'
+            set_value(academic_qual_end_date, tertiary_edu[0])
+
+            academic_qual_length = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[7]/div/input'
+            set_value(academic_qual_length, '')
+
+            academic_qual_grade = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[8]/div/input'
+            set_value(academic_qual_grade, tertiary_edu[4])
+
+            academic_qual_completed = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[9]/div/div[1]/label/input'
+            driver.find_element("xpath", academic_qual_completed).click()
+
+            academic_qual_parttime = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[10]/div/div[1]/label/input'
+            driver.find_element("xpath", academic_qual_parttime).click()
+            
 
     app_for_cred = '//*[@id="applyForCredit"]'
     no_app_for_cred = '//*[@id="doNotApplyForCredit"]'
