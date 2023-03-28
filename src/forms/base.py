@@ -53,7 +53,7 @@ class form_base:
         
     # find two dates form the string
     def get_date_range(self, dates):
-        ss = re.findall('(\d\d?\/)?\d\d?\/20\d\d', dates)
+        ss = re.findall('(?:\d\d?/)+20\d\d', dates)
         now = datetime.now()
         if len(ss) >= 2:
             return ss[0], ss[1]
