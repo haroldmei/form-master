@@ -5,6 +5,7 @@ class form_base:
         self.driver = _driver
         self.data = _data
         self.collect_mode = _mode
+        self.entry_url = None
 
     def set_value(self, key, val):
         elem = self.driver.find_element("xpath", key)

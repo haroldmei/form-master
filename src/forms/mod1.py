@@ -12,6 +12,7 @@ class mod1(form_base):
         super(mod1, self).__init__(_driver, _data, _mode)
         self.manage_applications_url = None
         self.main_application_handle = None
+        self.entry_url = 'https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn'
 
     def create_profile(self):
         students = self.data
@@ -45,16 +46,16 @@ class mod1(form_base):
         self.set_value(confirmed_password, f"a{personal_info['DOB (dd/mm/yyyy)']}")
 
         tnc = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[9]/div/label/input[2]'
-        driver.find_element("xpath", tnc).click()
+        self.check_button(tnc)
 
         acknowledge = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[10]/div/label/input[2]'
-        driver.find_element("xpath", acknowledge).click()
+        self.check_button(acknowledge)
 
     def login_session(self, user, password):
         students = self.data
         driver = self.driver
         
-        driver.get('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn')
+        driver.get(self.entry_url)
 
         wait = WebDriverWait(driver, 100)
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
@@ -65,14 +66,14 @@ class mod1(form_base):
         login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
         self.set_value(username_input, user)
         self.set_value(password_input, password)
-        driver.find_element("xpath", login_submit).click()
+        self.check_button(login_submit)
 
         wait = WebDriverWait(driver, 100)
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
         applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
-        driver.find_element("xpath", applications).click()
+        self.check_button(applications)
         manage_applications = '//*[@id="APAGN01"]'
-        driver.find_element("xpath", manage_applications).click()
+        self.check_button(manage_applications)
 
         self.manage_applications_url = driver.current_url
         self.main_application_handle = driver.current_window_handle
