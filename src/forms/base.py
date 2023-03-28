@@ -53,11 +53,17 @@ class form_base:
         
     # find two dates form the string
     def get_date_range(self, dates):
+        def format_date(date):
+            if re.find('\d\d?/\d\d?/20\d\d', date):
+                return date
+            else:
+                return f"1/{date}"
+            
         ss = re.findall('(?:\d\d?/)+20\d\d', dates)
         now = datetime.now()
         if len(ss) >= 2:
-            return ss[0], ss[1]
+            return format_date(ss[0]), format_date(ss[1])
         elif len(ss) == 1:
-            return ss[0], now.strftime("%d/%m/%Y")
+            return format_date(ss[0]), now.strftime("%d/%m/%Y")
         elif len(ss) == 0:
             return now.strftime("%d/%m/%Y"), now.strftime("%d/%m/%Y")
