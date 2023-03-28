@@ -6,8 +6,6 @@ import os
 import string
 import re
 
-# document = Document('/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/曾政源-澳洲大学申请信息表2023.docx')
-
 def extract_eng(s):
     s = s + ' '
 
@@ -120,3 +118,4 @@ def load(_dir):
             students.append(student)
     
     return students
+

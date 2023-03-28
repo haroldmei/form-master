@@ -7,6 +7,7 @@ import re
 from .base import form_base
 
 class mod1(form_base):
+    
     def __init__(self, _driver, _data):
         super(mod1, self).__init__(_driver, _data)
         self.manage_applications_url = None
@@ -94,14 +95,13 @@ class mod1(form_base):
         officialname='/html/body/div[1]/form/div[4]/div[2]/div/div/div[6]/div/input'
         gender = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[7]/div/div/div/div/input'
         dob = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[8]/div/div/input'
-        driver.find_element("xpath", title).send_keys('Mr' if personal_info['Gender'] == 'Male' else 'Miss')
-        driver.find_element("xpath", title).send_keys(Keys.RETURN)
+
+        self.set_value_list(title, 'Mr' if personal_info['Gender'] == 'Male' else 'Miss')
         self.set_value(givenname1, personal_info['Given Name'])
         self.set_value(familyname, personal_info['Family Name'])
         self.set_value(akaname, personal_info['Given Name'])
         self.set_value(officialname, f"{personal_info['Given Name']} {personal_info['Family Name']}")
-        driver.find_element("xpath", gender).send_keys(personal_info['Gender'])
-        driver.find_element("xpath", gender).send_keys(Keys.RETURN)
+        self.set_value_list(gender, personal_info['Gender'])
         self.set_value(dob, personal_info['DOB (dd/mm/yyyy)'])
 
         country =            '/html/body/div[1]/form/div[7]/div[2]/div/div/div[1]/div/div/div/div/input'
@@ -112,8 +112,8 @@ class mod1(form_base):
         province =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[7]/div/input'
         postcode =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[8]/div/input'
         check_address_same = '/html/body/div[1]/form/div[7]/div[2]/div/div/div[9]/div[2]/div/label/input'
-        driver.find_element("xpath", country).send_keys('China (Excludes SARS and Taiwan)')
-        driver.find_element("xpath", country).send_keys(Keys.RETURN)
+
+        self.set_value_list(country, 'China (Excludes SARS and Taiwan)')
         self.set_value(addressline1, personal_info['line1'])
         self.set_value(addressline2, personal_info['line2'])
         self.set_value(addressline3, personal_info['line3'])
@@ -122,7 +122,7 @@ class mod1(form_base):
 
         post = personal_info['Post Code'] if re.search('\d+', personal_info['Post Code']) else '0000'
         self.set_value(postcode, post)
-        driver.find_element("xpath", check_address_same).click()
+        self.check_button(check_address_same)
 
         parent_country = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[1]/div/div/div/div/input'
         parent_address1 = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[3]/div/input'
@@ -131,8 +131,8 @@ class mod1(form_base):
         parent_town = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[6]/div/input'
         parent_state = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[7]/div/input'
         parent_postcode = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[8]/div/input'
-        driver.find_element("xpath", parent_country).send_keys('China (Excludes SARS and Taiwan)')
-        driver.find_element("xpath", parent_country).send_keys(Keys.RETURN)
+        
+        self.set_value_list(parent_country, 'China (Excludes SARS and Taiwan)')
         self.set_value(parent_address1, personal_info['line1'])
         self.set_value(parent_address2, personal_info['line2'])
         self.set_value(parent_address3, personal_info['line3'])
@@ -151,16 +151,12 @@ class mod1(form_base):
         nationality = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
         is_aboriginal = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/div/div/div/input'
         hometongue = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/div/div/div/input'
-        driver.find_element("xpath", born_country).send_keys('China (Excludes SARS and Taiwan)')
-        driver.find_element("xpath", born_country).send_keys(Keys.RETURN)
-        driver.find_element("xpath", au_citizenship).send_keys('Other (non resident)')
-        driver.find_element("xpath", au_citizenship).send_keys(Keys.RETURN)
-        driver.find_element("xpath", nationality).send_keys('China (Excludes SARS and Taiwan)')
-        driver.find_element("xpath", nationality).send_keys(Keys.RETURN)
-        driver.find_element("xpath", is_aboriginal).send_keys('Neither Aboriginal nor Torres Strait Islander')
-        driver.find_element("xpath", is_aboriginal).send_keys(Keys.RETURN)
-        driver.find_element("xpath", hometongue).send_keys('Mandarin')
-        driver.find_element("xpath", hometongue).send_keys(Keys.RETURN)
+        
+        self.set_value_list(born_country, 'China (Excludes SARS and Taiwan)')
+        self.set_value_list(au_citizenship, 'Other (non resident)')
+        self.set_value_list(nationality, 'China (Excludes SARS and Taiwan)')
+        self.set_value_list(is_aboriginal, 'Neither Aboriginal nor Torres Strait Islander')
+        self.set_value_list(hometongue, 'Mandarin')
 
         current_at_usyd = '//*[@id="IPQ_APONPAPB"]'
         current_student_usyd = '//*[@id="IPQ_APONLCES1B"]'
@@ -168,10 +164,10 @@ class mod1(form_base):
         fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[1]/label/input'
         no_fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[2]/label/input'
 
-        driver.find_element("xpath", current_at_usyd).click()
-        driver.find_element("xpath", current_student_usyd).click()
-        driver.find_element("xpath", current_enrolled_usyd).click()
-        driver.find_element("xpath", no_fee_waiver).click()
+        self.check_button(current_at_usyd)
+        self.check_button(current_student_usyd)
+        self.check_button(current_enrolled_usyd)
+        self.check_button(no_fee_waiver)
 
     def fill_scholarships(self):
         driver = self.driver
@@ -195,58 +191,56 @@ class mod1(form_base):
         qualification = students[-1][1]
         print('>>> qualification info: ', qualification)
         not_first_language = '//*[@id="IPQ_APONEL1B"]'
-        driver.find_element("xpath", not_first_language).click()
+        self.check_button(not_first_language)
 
         english_test = False
         taken_english_test = '//*[@id="IPQ_APONEL2A"]'
         no_english_test = '//*[@id="IPQ_APONEL2B"]'
         if english_test:
-            driver.find_element("xpath", taken_english_test).click()
+            self.check_button(taken_english_test)
 
             test_type = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[3]/div/div/div/div/input'
-            driver.find_element("xpath", test_type).send_keys('IELTS')
-            driver.find_element("xpath", test_type).send_keys(Keys.RETURN)
+            self.set_value_list(test_type, 'IELTS')
 
             test_date = '//*[@id="IPQ_APONEL4"]'
             self.set_value(test_date, '01/Mar/2020')
 
             overall_score = '//*[@id="IPQ_APONEL5"]'
-            driver.find_element("xpath", overall_score).send_keys('7')
+            self.set_value_list(overall_score, '7')
             #upload english test result
         else:
-            driver.find_element("xpath", no_english_test).click()
+            self.check_button(no_english_test)
 
             scheduled_test = '//*[@id="IPQ_APONEL10A"]'
             not_scheduled_test = '//*[@id="IPQ_APONEL10B"]'
-            driver.find_element("xpath", not_scheduled_test).click()
+            self.check_button(not_scheduled_test)
 
             tertiary_edu_accessed_in_english = '//*[@id="IPQ_APONEL12A1"]'
             not_tertiary_edu_accessed_in_english = '//*[@id="IPQ_APONEL12A2"]'
-            driver.find_element("xpath", not_tertiary_edu_accessed_in_english).click()
+            self.check_button(not_tertiary_edu_accessed_in_english)
 
             scheduled_test1 = '//*[@id="IPQ_APONEL16A"]'
             not_scheduled_test1 = '//*[@id="IPQ_APONEL16B"]'
-            driver.find_element("xpath", not_scheduled_test1).click()
+            self.check_button(not_scheduled_test1)
 
         #record of exclusion
         suspended_course = '//*[@id="IPQ_APONRE1A"]'
         no_suspended_course = '//*[@id="IPQ_APONRE1B"]'
-        driver.find_element("xpath", no_suspended_course).click()
+        self.check_button(no_suspended_course)
 
         asked_cause = '//*[@id="IPQ_APONRE2A"]'
         no_asked_cause = '//*[@id="IPQ_APONRE2B"]'
-        driver.find_element("xpath", no_asked_cause).click()
+        self.check_button(no_asked_cause)
 
         asked_explain = '//*[@id="IPQ_APONRE3A"]'
         no_asked_explain = '//*[@id="IPQ_APONRE3B"]'
-        driver.find_element("xpath", no_asked_explain).click()
+        self.check_button(no_asked_explain)
 
         #upload docs for cause exclusion
 
         #high qualification
         edu_level = '/html/body/div[1]/form/div[8]/div[2]/div/div/div/div/div/div/div/input'
-        driver.find_element("xpath", edu_level).send_keys('Secondary Qualification')
-        driver.find_element("xpath", edu_level).send_keys(Keys.RETURN)
+        self.set_value_list(edu_level, 'Secondary Qualification')
 
         #upload you docs
 
@@ -260,8 +254,7 @@ class mod1(form_base):
         year = re.search('20\d\d', secondary_edu[0])
         if year:
             secondary_qual_year = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[3]/div/div/div/div/input'
-            driver.find_element("xpath", secondary_qual_year).send_keys(year.group())
-            driver.find_element("xpath", secondary_qual_year).send_keys(Keys.RETURN)
+            self.set_value_list(secondary_qual_year, year.group())
 
         secondary_qual_score = '//*[@id="IPQ_APMOTHRS"]'
         self.set_value(secondary_qual_score, secondary_edu[4])
@@ -271,8 +264,7 @@ class mod1(form_base):
             tertiary_edu = qualification.loc[1].values.flatten().tolist()
 
             academic_qual_name = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[1]/div/div/div/div/input'
-            driver.find_element("xpath", academic_qual_name).send_keys('Bachelors degree')
-            driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
+            self.set_value_list(academic_qual_name, 'Bachelors degree')
 
             academic_qual_course = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[2]/div/input'
             self.set_value(academic_qual_course, tertiary_edu[2])
@@ -281,8 +273,7 @@ class mod1(form_base):
             self.set_value(academic_qual_institution, tertiary_edu[1])
 
             academic_qual_country = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
-            driver.find_element("xpath", academic_qual_country).send_keys(self.get_country_code(tertiary_edu[3]))
-            driver.find_element("xpath", academic_qual_country).send_keys(Keys.RETURN)
+            self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
 
             academic_qual_start_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[5]/div/div/input'
             self.set_value(academic_qual_start_date, tertiary_edu[0].split(' to ')[0])
@@ -297,21 +288,20 @@ class mod1(form_base):
             self.set_value(academic_qual_grade, tertiary_edu[4])
 
             academic_qual_completed = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[9]/div/div[1]/label/input'
-            driver.find_element("xpath", academic_qual_completed).click()
+            self.check_button(academic_qual_completed)
 
             academic_qual_parttime = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[10]/div/div[1]/label/input'
-            driver.find_element("xpath", academic_qual_parttime).click()
+            self.check_button(academic_qual_parttime)
 
             if (qualification.shape[0] > 2) and qualification['School'].tolist()[2]:
                 print('Add another qualification')
                 another_qual = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[11]/div/div/label/input'
-                driver.find_element("xpath", another_qual).click()
+                self.check_button(another_qual)
 
                 tertiary_edu = qualification.loc[2].values.flatten().tolist()
 
                 academic_qual_name = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[1]/div/div/div/div/input'
-                driver.find_element("xpath", academic_qual_name).send_keys('Bachelors degree')
-                driver.find_element("xpath", academic_qual_name).send_keys(Keys.RETURN)
+                self.set_value_list(academic_qual_name, 'Bachelors degree')
 
                 academic_qual_course = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[2]/div/input'
                 self.set_value(academic_qual_course, tertiary_edu[2])
@@ -320,8 +310,7 @@ class mod1(form_base):
                 self.set_value(academic_qual_institution, tertiary_edu[1])
 
                 academic_qual_country = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[4]/div/div/div/div/input'
-                driver.find_element("xpath", academic_qual_country).send_keys(self.get_country_code(tertiary_edu[3]))
-                driver.find_element("xpath", academic_qual_country).send_keys(Keys.RETURN)
+                self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
 
                 academic_qual_start_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[5]/div/div/input'
                 self.set_value(academic_qual_start_date, tertiary_edu[0].split(' to ')[0])
@@ -336,10 +325,10 @@ class mod1(form_base):
                 self.set_value(academic_qual_grade, tertiary_edu[4])
 
                 academic_qual_completed = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[9]/div/div[1]/label/input'
-                driver.find_element("xpath", academic_qual_completed).click()
+                self.check_button(academic_qual_completed)
 
                 academic_qual_parttime = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[10]/div/div[1]/label/input'
-                driver.find_element("xpath", academic_qual_parttime).click()
+                self.check_button(academic_qual_parttime)
 
 
         app_for_cred = '//*[@id="applyForCredit"]'
@@ -425,3 +414,5 @@ class mod1(form_base):
         else:
             print('no actions for: ', url)
             pass
+
+    
