@@ -24,6 +24,7 @@ is_win = (True if os.name == 'nt' else False)
 main_application_handle = None
 module = None
 driver = None
+run_mode = 0
 
 def on_click(x, y, button, pressed):
     global main_application_handle
@@ -38,21 +39,21 @@ def on_click(x, y, button, pressed):
         
         module.run()
 
-def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie')):
+def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), mode = 0):
     from getpass import getpass
     global main_application_handle
     global module
     global driver
+    global run_mode
 
+    run_mode = mode
+    
     username = os.getenv('SYD_USER', '')
     password = os.getenv('SYD_PASS', '')
     if not username:
         username = input('Username: ')
         password = getpass()
 
-    students = load(dir)
-    print(dir, students)
-    
     if is_win:
         driver = webdriver.Chrome()
     else:
@@ -62,7 +63,12 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         options.set_preference("network.protocol-handler.warn-external-default", False)
         driver = Firefox(options=options)
 
-    module = mod1(driver, students)
+    students = []
+    if not run_mode:
+        students = load(dir)
+        print(students)
+
+    module = mod1(driver, students, run_mode)
     main_application_handle = module.login_session(username, password)
     try:
         with Listener(on_click=on_click) as listener:

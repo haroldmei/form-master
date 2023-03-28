@@ -1,9 +1,10 @@
 from selenium.webdriver.common.keys import Keys
 
 class form_base:
-    def __init__(self, _driver, _data):
+    def __init__(self, _driver, _data, _mode):
         self.driver = _driver
         self.data = _data
+        self.collect_mode = _mode
 
     def set_value(self, key, val):
         elem = self.driver.find_element("xpath", key)

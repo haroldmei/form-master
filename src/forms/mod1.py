@@ -8,8 +8,8 @@ from .base import form_base
 
 class mod1(form_base):
     
-    def __init__(self, _driver, _data):
-        super(mod1, self).__init__(_driver, _data)
+    def __init__(self, _driver, _data, _mode):
+        super(mod1, self).__init__(_driver, _data, _mode)
         self.manage_applications_url = None
         self.main_application_handle = None
 
@@ -76,7 +76,9 @@ class mod1(form_base):
 
         self.manage_applications_url = driver.current_url
         self.main_application_handle = driver.current_window_handle
-        print('processing info: ', students[-1][0])
+        
+        if not self.collect_mode:
+            print('processing info: ', students[-1][0])
 
         return self.main_application_handle
 
@@ -390,8 +392,11 @@ class mod1(form_base):
         return
 
     def run(self):
-        students = self.data
+        if self.collect_mode:
+            print('collect page information.')
+            return
         
+        students = self.data
         if not len(students):
             print('no more studnets to process.')
             return
