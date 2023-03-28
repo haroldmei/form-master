@@ -358,7 +358,7 @@ class mod1(form_base):
             self.fill_your_qualifications()
         elif title == 'Further references':
             self.fill_further_references()
-            return self.new_application()
+            #return self.new_application()
         elif title == 'Declaration':
             print('Please confirm.')
             self.new_application()
