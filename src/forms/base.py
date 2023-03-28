@@ -54,7 +54,7 @@ class form_base:
     # find two dates form the string
     def get_date_range(self, dates):
         def format_date(date):
-            if re.find('\d\d?/\d\d?/20\d\d', date):
+            if re.search('\d\d?/\d\d?/20\d\d', date):
                 return date
             else:
                 return f"1/{date}"
