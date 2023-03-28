@@ -114,8 +114,14 @@ def load(_dir):
     for file in files:
         if re.search('Application Form for AU University', file) or re.search('澳洲大学申请信息表', file):
             print(file)
-            student = load_table(file)
-            students.append(student)
+            try:
+                student = load_table(file)
+                students.append(student)
+            except Exception as e:
+                print(str(e))
+                print(f'Failed to load file {file}.')
+
+
     
     return students
 

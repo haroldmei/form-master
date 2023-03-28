@@ -37,7 +37,12 @@ def on_click(x, y, button, pressed):
         if (button.name != 'middle') or pressed:
             return
         
-        module.run()
+        try:
+            module.run()
+        except Exception as e:
+            print(str(e))
+            print('%% Failed, please input manually.')
+
 
 def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), mode = 0):
     from getpass import getpass
@@ -66,7 +71,7 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
     students = []
     if not run_mode:
         students = load(dir)
-        print(students)
+        #print(students)
 
     module = mod1(driver, students, run_mode)
     main_application_handle = module.login_session(username, password)

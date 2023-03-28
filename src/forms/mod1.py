@@ -278,11 +278,12 @@ class mod1(form_base):
             academic_qual_country = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
             self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
 
+            d1,d2 = self.get_date_range(tertiary_edu[0])
             academic_qual_start_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[5]/div/div/input'
-            self.set_value(academic_qual_start_date, tertiary_edu[0].split(' to ')[0])
+            self.set_value(academic_qual_start_date, d1)
 
             academic_qual_end_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[6]/div/div/input'
-            self.set_value(academic_qual_end_date, tertiary_edu[0].split(' to ')[1])
+            self.set_value(academic_qual_end_date, d2)
 
             academic_qual_length = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/input'
             self.set_value(academic_qual_length, '')
@@ -315,11 +316,13 @@ class mod1(form_base):
                 academic_qual_country = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[4]/div/div/div/div/input'
                 self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
 
+
+                d1,d2 = self.get_date_range(tertiary_edu[0])
                 academic_qual_start_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[5]/div/div/input'
-                self.set_value(academic_qual_start_date, tertiary_edu[0].split(' to ')[0])
+                self.set_value(academic_qual_start_date, d1)
 
                 academic_qual_end_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[6]/div/div/input'
-                self.set_value(academic_qual_end_date, tertiary_edu[0].split(' to ')[1])
+                self.set_value(academic_qual_end_date, d2)
 
                 academic_qual_length = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[7]/div/input'
                 self.set_value(academic_qual_length, '')
