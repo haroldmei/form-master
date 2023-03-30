@@ -1,13 +1,13 @@
 Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplication]
-@="Student Application"
+@="USYD"
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplication\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"%V\""
 
 [HKEY_CLASSES_ROOT\Directory\shell\StudentApplication]
-@="Student Application"
+@="USYD"
 
 [HKEY_CLASSES_ROOT\Directory\shell\StudentApplication\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"%V\""

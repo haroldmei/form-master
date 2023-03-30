@@ -29,7 +29,7 @@ def get_school(a):
         return False
     
     if match_school(a, ["悉尼大学", "Taylor's college", "USYD"]):
-        return "Sydney"
+        return "USYD"
     elif match_school(a, ["昆士兰大学", "Queen’s college", "UQ"]):
         return "UQ"
     elif match_school(a, ["新南威尔士大学", "UNSW global", "UNSW"]):
@@ -45,7 +45,7 @@ def get_school(a):
 
 def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/曾政源-澳洲大学申请信息表2023.docx'):
     document = Document(f'{app_tbl}')
-    data = {}
+    data = {'Number': 0}
     for table in document.tables[:2]:
         for i, row in enumerate(table.rows):
             text = (cell.text for cell in row.cells)
@@ -76,7 +76,6 @@ def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/�
                         line3 = ''
                     data.update({'province': province, 'city': city, 'line1': line1, 'line2': line2, 'line3': line3})
 
-
     df_personal = pd.DataFrame.from_dict({'keys': data.keys(), 'values': data.values()})
 
     lines = []
@@ -99,7 +98,7 @@ def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/�
     df_application['CRICOS'] = df_application['CRICOS'].apply(lambda a: extract_eng(a))
     df_application['Commencement Date(mm/yyyy)'] = df_application['Commencement Date(mm/yyyy)'].apply(lambda a: extract_eng(a))
 
-    return data, df_edu, df_application, df_personal
+    return [data, df_edu, df_application, df_personal]
 
 def load_ielts(app_file = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/'):
     return

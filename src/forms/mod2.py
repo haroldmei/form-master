@@ -62,7 +62,7 @@ class mod2(form_base):
     def search_course(self):
         students = self.data
         df_application = students[-1][2]
-        course_applied = df_application[df_application['Proposed School'] == 'Sydney']['Proposed Course with Corresponding Links'].tolist()[0]
+        course_applied = df_application[df_application['Proposed School'] == 'USYD']['Proposed Course with Corresponding Links'].tolist()[0]
         course = '//*[contains(@id,"POP_UDEF") and contains(@id,"POP.MENSYS.1-1")]'
         self.set_value(course, course_applied)
         #view_report = '/html/body/div[1]/form/div[3]/div/div/div[2]/div[3]/div/input[2]'

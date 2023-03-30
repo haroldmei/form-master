@@ -37,10 +37,12 @@ class mod1(form_base):
         self.set_value(confirmed_email, personal_info["Student's Email"])
 
         username = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[6]/div/input'
-        self.set_value(username, personal_info["Student's Email"])
+        str_username = f'{personal_info["Given Name"]}{personal_info["Family Name"]}{personal_info["Number"]}'
+        str_username.replace(' ', '')
+        self.set_value(username, str_username)
 
         password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[7]/div/input'
-        self.set_value(password, f"a{personal_info['DOB (dd/mm/yyyy)']}") # default use email as username
+        self.set_value(password, f"a{personal_info['DOB (dd/mm/yyyy)'].replace('/', '')}") # default use email as username
 
         confirmed_password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[8]/div/input'
         self.set_value(confirmed_password, f"a{personal_info['DOB (dd/mm/yyyy)']}")
@@ -282,7 +284,7 @@ class mod1(form_base):
             academic_qual_start_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[5]/div/div/input'
             self.set_value(academic_qual_start_date, d1)
 
-            academic_qual_end_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[6]/div/div/input'
+            academic_qual_end_date = '/html/body/div[1]/form/div[10]qualification/div[2]/div/div/div[6]/div/div/input'
             self.set_value(academic_qual_end_date, d2)
 
             academic_qual_length = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/input'
@@ -386,10 +388,19 @@ class mod1(form_base):
         students = self.data
 
         df_application = students[-1][2]
-        course_applied = df_application[df_application['Proposed School'] == 'Sydney']['Proposed Course with Corresponding Links'].tolist()[0]
+        df_application = df_application[df_application['Proposed School'] == 'USYD']
+        course_applied = df_application['Proposed Course with Corresponding Links'].tolist()[0]
+        if df_application.shape[0] > 1:
+            df_application = df_application.drop(index=[0])
+            new_item = students[-1].copy()
+            new_item[0]['Number'] += 1
+            new_item[2] = df_application
+            students.insert(0, new_item)
+            
         course = '//*[contains(@id,"POP_UDEF") and contains(@id,"POP.MENSYS.1-1")]'
         self.set_value(course, course_applied)
 
+        print(students)
         #view_report = '/html/body/div[1]/form/div[3]/div/div/div[2]/div[3]/div/input[2]'
         #driver.find_element("xpath", view_report).click()
 
