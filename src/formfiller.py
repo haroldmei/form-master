@@ -1,6 +1,10 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 from selenium.webdriver import Firefox, FirefoxOptions
 from threading import Lock
 
@@ -28,23 +32,30 @@ run_mode = 0
 def on_click(x, y, button, pressed):
     global main_application_handle
     global driver
+    
+    if pressed:
+        return
+    
     with lock:
-        if (button.name == 'right'):
-            print('quitting')
-            quit()
-
-        if (len(driver.window_handles) == 2) and (not pressed) and (driver.current_window_handle == main_application_handle):
-            driver.switch_to.window(driver.window_handles[0] if driver.window_handles[0] != main_application_handle else driver.window_handles[1])
-            print('switch main window..........................')
-
-        if (button.name != 'middle') or pressed:
+        if button.name == 'middle':        
+            try:
+                module.run()
+            except Exception as e:
+                print(str(e))
+                print('%% Failed, please input manually.')
+            
             return
         
-        try:
-            module.run()
-        except Exception as e:
-            print(str(e))
-            print('%% Failed, please input manually.')
+        elif button.name == 'left':
+            wait = WebDriverWait(driver, 10)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            if driver.window_handles[-1] != driver.current_window_handle:
+                print('>>> window switching done')
+                driver.switch_to.window(driver.window_handles[-1])
+            return
+        else:
+            return
+
 
 
 def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), uni = 'usyd', mode = 0):

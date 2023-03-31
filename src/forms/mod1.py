@@ -379,6 +379,8 @@ class mod1(form_base):
         elif title == 'Declaration':
             print('Please confirm.')
             return self.new_application()
+        elif title == 'Manage your application fee':
+            pass
         else:
             pass
         
@@ -424,12 +426,14 @@ class mod1(form_base):
         email = '//*[@id="UDS_EMAIL"]'
         self.set_value(email, 'au.info@shinyway.com')
 
+    def payment_method(self):
+        self.set_value('//*[@id="UDS_CARDNUMBER"]', '123456789')
 
     def run(self):
         if self.collect_mode:
             print('collect page information.')
             return
-        
+
         students = self.data
         if not len(students):
             print('no more studnets to process.')
@@ -451,8 +455,11 @@ class mod1(form_base):
             self.create_profile()
 
         # email payment
-        elif re.search('https://pay.sydney.edu.au/ePays/paymentemail?UDS_ACTION=PMPBPN.+', url):
+        elif re.search('https://pay.sydney.edu.au/ePays/paymentemail\?UDS_ACTION=PMPBPN', url):
             self.payment_email()
+            
+        elif re.search('https://pay.sydney.edu.au/ePays/paymentemail$', url):
+            self.payment_method()
 
         else:
             print('no actions for: ', url)
