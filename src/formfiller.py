@@ -1,23 +1,20 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 
 from selenium.webdriver import Firefox, FirefoxOptions
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 from threading import Lock
 
-from pynput.mouse import Listener
-from glob import glob
+from pynput.mouse import Listener as MouseListener
+from pynput.keyboard import Listener as KeyboardListener
 
 from etl import load
 from forms.mod1 import mod1
 
 import os
-import re
-import time
 import fire
+import subprocess
+import socket
+import time
 
 lock = Lock()
 is_win = (True if os.name == 'nt' else False)
@@ -60,7 +57,21 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         password = getpass()
 
     if is_win:
-        driver = webdriver.Chrome()
+        server_address = ('127.0.0.1', 9222)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.connect(server_address)
+        except:    
+            print(' start the browser ... ')
+            cmd = ['C:\Program Files (x86)\Google\Chrome\Application\chrome.exe', '--remote-debugging-port=9222', '--user-data-dir=C:\selenium\ChromeProfile']
+            subprocess.Popen(cmd)
+        finally:
+            sock.close()
+        
+        chrome_options = Options()
+        chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
+        driver = webdriver.Chrome(chrome_options=chrome_options)
+        #driver = webdriver.Chrome()
     else:
         options = FirefoxOptions()
         options.set_preference("network.protocol-handler.external-default", False)
@@ -76,8 +87,8 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
     module = mod1(driver, students, run_mode)
     main_application_handle = module.login_session(username, password)
     try:
-        with Listener(on_click=on_click) as listener:
-            listener.join()
+        with MouseListener(on_click=on_click) as mouse_listener:
+            mouse_listener.join()
     except:
         print('failing exit')
 

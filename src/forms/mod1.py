@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 
 import re
 from .base import form_base
+import sys
 
 class mod1(form_base):
     
@@ -37,7 +38,7 @@ class mod1(form_base):
         self.set_value(confirmed_email, personal_info["Student's Email"])
 
         username = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[6]/div/input'
-        str_username = f'{personal_info["Given Name"]}{personal_info["Family Name"]}{personal_info["Number"]}'
+        str_username = f'{personal_info["Family Name"].upper()}{personal_info["Given Name"].lower()}{personal_info["DOB (dd/mm/yyyy)"].split("/")[-1]}.{personal_info["Number"]}'
         str_username.replace(' ', '')
         self.set_value(username, str_username)
 
@@ -57,25 +58,26 @@ class mod1(form_base):
         students = self.data
         driver = self.driver
         
-        driver.get(self.entry_url)
+        if not re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_portal.url.*', driver.current_url):
+            driver.get(self.entry_url)
 
-        wait = WebDriverWait(driver, 100)
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            wait = WebDriverWait(driver, 100)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-        # user/password
-        username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
-        password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
-        login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
-        self.set_value(username_input, user)
-        self.set_value(password_input, password)
-        self.check_button(login_submit)
-
-        wait = WebDriverWait(driver, 100)
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-        applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
-        self.check_button(applications)
-        manage_applications = '//*[@id="APAGN01"]'
-        self.check_button(manage_applications)
+            # user/password
+            username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
+            password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
+            login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
+            self.set_value(username_input, user)
+            self.set_value(password_input, password)
+            self.check_button(login_submit)
+            
+            wait = WebDriverWait(driver, 100)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
+            self.check_button(applications)
+            manage_applications = '//*[@id="APAGN01"]'
+            self.check_button(manage_applications)
 
         self.manage_applications_url = driver.current_url
         self.main_application_handle = driver.current_window_handle
@@ -360,10 +362,9 @@ class mod1(form_base):
             self.fill_your_qualifications()
         elif title == 'Further references':
             self.fill_further_references()
-            #return self.new_application()
         elif title == 'Declaration':
             print('Please confirm.')
-            self.new_application()
+            return self.new_application()
         else:
             pass
         
@@ -400,11 +401,15 @@ class mod1(form_base):
         course = '//*[contains(@id,"POP_UDEF") and contains(@id,"POP.MENSYS.1-1")]'
         self.set_value(course, course_applied)
 
-        print(students)
         #view_report = '/html/body/div[1]/form/div[3]/div/div/div[2]/div[3]/div/input[2]'
         #driver.find_element("xpath", view_report).click()
 
         return
+
+    def payment_email(self):
+        email = '//*[@id="UDS_EMAIL"]'
+        self.set_value(email, 'au.info@shinyway.com')
+
 
     def run(self):
         if self.collect_mode:
@@ -414,14 +419,15 @@ class mod1(form_base):
         students = self.data
         if not len(students):
             print('no more studnets to process.')
-            return
+            sys.exit()
         
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
         url = self.driver.current_url
 
         if re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_ipp_cgi.start?', url):
-            self.fill_form()
+            if not self.fill_form():
+                sys.exit()
 
         elif re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/SIW_POD.start_url?.+', url):
             self.search_course()
@@ -429,7 +435,10 @@ class mod1(form_base):
         # create profile
         elif re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_ipp_lgn.login?.+', url):
             self.create_profile()
-            #new_application()
+
+        # email payment
+        elif re.search('https://pay.sydney.edu.au/ePays/paymentemail?UDS_ACTION=PMPBPN.+', url):
+            self.payment_email()
 
         else:
             print('no actions for: ', url)
