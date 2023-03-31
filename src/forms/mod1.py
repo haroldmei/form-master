@@ -41,15 +41,19 @@ class mod1(form_base):
         self.set_value(confirmed_email, personal_info["Student's Email"])
 
         username = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[6]/div/input'
-        str_username = f'{personal_info["Family Name"].upper()}{personal_info["Given Name"].lower()}{personal_info["DOB (dd/mm/yyyy)"].split("/")[-1]}.{personal_info["Number"]}'
-        str_username.replace(' ', '')
+        str_username = f'{personal_info["Family Name"].upper()}{personal_info["Given Name"].lower()}{personal_info["DOB (dd/mm/yyyy)"].split("/")[-1]}'
+        str_username = str_username.replace(' ', '')
+        if personal_info["Number"] > 0:
+            str_username = f"{str_username}{personal_info['Number'] + 1}"
         self.set_value(username, str_username)
 
         password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[7]/div/input'
-        self.set_value(password, f"a{personal_info['DOB (dd/mm/yyyy)'].replace('/', '')}") # default use email as username
+        password_val = f"{personal_info['DOB (dd/mm/yyyy)'].split('/')[-1]}{personal_info['Family Name'].upper()}{personal_info['Given Name'].lower()}"
+        password_val = password_val.replace(' ', '')
+        self.set_value(password, password_val) # default use email as username
 
         confirmed_password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[8]/div/input'
-        self.set_value(confirmed_password, f"a{personal_info['DOB (dd/mm/yyyy)']}")
+        self.set_value(confirmed_password, password_val)
 
         tnc = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[9]/div/label/input[2]'
         self.check_button(tnc)
