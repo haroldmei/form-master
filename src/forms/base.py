@@ -10,6 +10,14 @@ class form_base:
         self.collect_mode = _mode
         self.entry_url = None
 
+    def collect_info(self):
+        print('collect page information.')
+        elems = self.driver.find_elements("xpath", '//*[@id]')
+        for e in elems:
+            print(e.get_attribute('id'))
+            eid = e.get_attribute('id')
+            self.set_value(f'//*[@id="{eid}"]', eid)
+
     def set_value(self, key, val):
         elem = self.driver.find_element("xpath", key)
         if not elem:

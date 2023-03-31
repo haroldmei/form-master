@@ -9,12 +9,14 @@ from pynput.keyboard import Listener as KeyboardListener
 
 from etl import load
 from forms.mod1 import mod1
+from forms.mod2 import mod2
 
 import os
 import fire
 import subprocess
 import socket
 import time
+import sys
 
 lock = Lock()
 is_win = (True if os.name == 'nt' else False)
@@ -27,6 +29,10 @@ def on_click(x, y, button, pressed):
     global main_application_handle
     global driver
     with lock:
+        if (button.name == 'right'):
+            print('quitting')
+            quit()
+
         if (len(driver.window_handles) == 2) and (not pressed) and (driver.current_window_handle == main_application_handle):
             driver.switch_to.window(driver.window_handles[0] if driver.window_handles[0] != main_application_handle else driver.window_handles[1])
             print('switch main window..........................')
@@ -41,20 +47,14 @@ def on_click(x, y, button, pressed):
             print('%% Failed, please input manually.')
 
 
-def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), mode = 0):
-    from getpass import getpass
+def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), uni = 'usyd', mode = 0):
+
     global main_application_handle
     global module
     global driver
     global run_mode
 
     run_mode = mode
-    
-    username = os.getenv('SYD_USER', '')
-    password = os.getenv('SYD_PASS', '')
-    if not username:
-        username = input('Username: ')
-        password = getpass()
 
     if is_win:
         server_address = ('127.0.0.1', 9222)
@@ -84,13 +84,26 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         students = load(dir)
         #print(students)
 
-    module = mod1(driver, students, run_mode)
-    main_application_handle = module.login_session(username, password)
+    if uni == 'usyd':
+        module = mod1(driver, students, run_mode)
+    elif uni == 'unsw':
+        module = mod2(driver, students, run_mode)
+    else:
+        print('uni not yet supported, exit.')
+        return
+
+    main_application_handle = module.login_session()
     try:
-        with MouseListener(on_click=on_click) as mouse_listener:
-            mouse_listener.join()
+        mouse_listener = MouseListener(on_click=on_click)
+        mouse_listener.start()
+
+        # do this idle loop
+        while True:
+            time.sleep(10)
     except:
         print('failing exit')
+    finally:
+        mouse_listener.stop()
 
 if __name__ == '__main__':
     fire.Fire(run)

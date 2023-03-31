@@ -3,8 +3,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-import re
 from .base import form_base
+from getpass import getpass
+
+import os
+import re
 
 class mod2(form_base):
     
@@ -12,22 +15,38 @@ class mod2(form_base):
         super(mod2, self).__init__(_driver, _data, _mode)
         self.manage_applications_url = None
         self.main_application_handle = None
+        self.entry_url = 'https://applyonline.unsw.edu.au/agent-login'
 
     def create_profile(self):
         pass
 
-    def login_session(self, user, password):
+    def login_session(self):
         students = self.data
         driver = self.driver
         
-        driver.get(self.entry_url)
+        if not re.search('https://applyonline.unsw.edu.au/agent/homepage', driver.current_url):
+            username = os.getenv('NSW_USER', '')
+            password = os.getenv('NSW_PASS', '')
+            if not username:
+                username = input('Username: ')
+                password = getpass()
 
-        wait = WebDriverWait(driver, 100)
-        wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            driver.get(self.entry_url)
+
+            wait = WebDriverWait(driver, 100)
+            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+            self.check_button('//*[@id="login"]/div/form/div[1]/span/span[1]/span/span[2]')
+            self.set_value_list('/html/body/span/span/span[1]/input', 'Shinyway Sydney')
+            self.set_value('//*[@id="_email"]', username)
+            self.set_value('//*[@id="_password"]', password)
+            self.check_button('//*[@id="login"]/div/form/p[1]/input')
+            self.check_button('//*[@id="loginButtonAgent"]')
 
         self.manage_applications_url = driver.current_url
         self.main_application_handle = driver.current_window_handle
         return self.main_application_handle
+    
 
     def fill_personal_info(self):
         pass
@@ -71,7 +90,7 @@ class mod2(form_base):
 
     def run(self):
         if self.collect_mode:
-            print('collect page information.')
+            self.collect_info()
             return
         
         students = self.data

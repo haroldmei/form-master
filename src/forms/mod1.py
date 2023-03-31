@@ -3,9 +3,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-import re
 from .base import form_base
+from getpass import getpass
+
 import sys
+import os
+import re
 
 class mod1(form_base):
     
@@ -54,21 +57,28 @@ class mod1(form_base):
         acknowledge = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[10]/div/label/input[2]'
         self.check_button(acknowledge)
 
-    def login_session(self, user, password):
+    def login_session(self):
         students = self.data
         driver = self.driver
-        
+
         if not re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_portal.url.*', driver.current_url):
+            
+            username = os.getenv('SYD_USER', '')
+            password = os.getenv('SYD_PASS', '')
+            if not username:
+                username = input('Username: ')
+                password = getpass()
+
             driver.get(self.entry_url)
 
             wait = WebDriverWait(driver, 100)
             wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-            # user/password
+            # username/password
             username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
             password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
             login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
-            self.set_value(username_input, user)
+            self.set_value(username_input, username)
             self.set_value(password_input, password)
             self.check_button(login_submit)
             
