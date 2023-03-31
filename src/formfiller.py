@@ -63,8 +63,14 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
             sock.connect(server_address)
         except:    
             print(' start the browser ... ')
-            cmd = ['C:\Program Files (x86)\Google\Chrome\Application\chrome.exe', '--remote-debugging-port=9222', '--user-data-dir=C:\selenium\ChromeProfile']
-            subprocess.Popen(cmd)
+            for basedir in ['ProgramFiles', 'ProgramFiles(x86)', 'LocalAppData']:
+                if basedir in os.environ:
+                    chrome = f"{os.environ[basedir]}\Google\Chrome\Application\chrome.exe"
+                    if os.path.isfile(chrome):
+                        print('use browser: ', chrome)
+                        cmd = [chrome, '--remote-debugging-port=9222', '--user-data-dir=C:\selenium\ChromeProfile']
+                        subprocess.Popen(cmd)
+                        break
         finally:
             sock.close()
         
