@@ -427,7 +427,13 @@ class mod1(form_base):
         self.set_value(email, 'au.info@shinyway.com')
 
     def payment_method(self):
-        self.set_value('//*[@id="UDS_CARDNUMBER"]', '123456789')
+        #cardnumber = '//*[@id="UDS_CARDNUMBER"]'
+        cardnumber = '/html/body/form/fieldset/ul/li[1]/div[2]/input'
+        month = '/html/body/form/fieldset/ul/li[2]/div[2]/input[1]'
+        year = '/html/body/form/fieldset/ul/li[2]/div[2]/input[2]'
+        self.set_value(cardnumber, '123456789')
+        self.set_value(month, '09')
+        self.set_value(year, '25')
 
     def run(self):
         if self.collect_mode:

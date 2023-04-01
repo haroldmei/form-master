@@ -36,6 +36,7 @@ def on_click(x, y, button, pressed):
     if pressed:
         return
     
+    print('DEBUG >>> ', driver.window_handles, driver.current_window_handle)
     with lock:
         if button.name == 'middle':        
             try:
