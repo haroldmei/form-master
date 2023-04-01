@@ -20,11 +20,11 @@ class form_base:
             self.set_value(f'//*[@id="{eid}"]', eid)
 
     def set_value(self, key, val):
-        elem = self.driver.find_element("xpath", key)
-        if not elem:
-            print('WARNING: element is not found.')
-            return
         try:
+            elem = self.driver.find_element("xpath", key)
+            if not elem:
+                print('WARNING: element is not found.')
+                return
             elem.clear()
             elem.send_keys(val)
         except Exception as e:
@@ -32,11 +32,11 @@ class form_base:
             print('%% Failed, please input manually.')
 
     def set_value_list(self, key, val):
-        elem = self.driver.find_element("xpath", key)
-        if not elem:
-            print('WARNING: element is not found.')
-            return
         try:
+            elem = self.driver.find_element("xpath", key)
+            if not elem:
+                print('WARNING: element is not found.')
+                return
             elem.send_keys(val)
             elem.send_keys(Keys.RETURN)
         except Exception as e:
@@ -44,11 +44,11 @@ class form_base:
             print('%% Failed, please input manually.')
 
     def check_button(self, key):
-        elem = self.driver.find_element("xpath", key)
-        if not elem:
-            print('WARNING: element is not found.')
-            return
         try:
+            elem = self.driver.find_element("xpath", key)
+            if not elem:
+                print('WARNING: element is not found.')
+                return
             elem.click()
         except Exception as e:
             print(key, str(e))
