@@ -39,12 +39,7 @@ def on_click(x, y, button, pressed):
     #print('DEBUG >>> ', driver.window_handles, driver.current_window_handle)
     with lock:
         if button.name == 'middle':        
-            try:
-                module.run()
-            except Exception as e:
-                print(str(e))
-                print('%% Failed, please input manually.')
-            
+            module.run()
             return
         
         elif button.name == 'left':
@@ -75,14 +70,18 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
             sock.connect(server_address)
         except:    
             print(' start the browser ... ')
-            for basedir in ['ProgramFiles', 'ProgramFiles(x86)', 'LocalAppData']:
-                if basedir in os.environ:
-                    chrome = f"{os.environ[basedir]}\Google\Chrome\Application\chrome.exe"
-                    if os.path.isfile(chrome):
-                        print('use browser: ', chrome)
-                        cmd = [chrome, '--remote-debugging-port=9222', '--user-data-dir=C:\selenium\ChromeProfile']
-                        subprocess.Popen(cmd)
-                        break
+            chromes = [
+                f"{os.environ[basedir]}\Google\Chrome\Application\chrome.exe" 
+                for basedir in ['ProgramFiles', 'ProgramFiles(x86)', 'LocalAppData'] 
+                if basedir in os.environ] + ['/opt/google/chrome/chrome'
+            ]
+            for chrome in chromes:
+                if os.path.isfile(chrome):
+                    profiledir = f"{os.environ['LocalAppData']}\selenium\ChromeProfile" if is_win else f"{os.environ['HOME']}/selenium/ChromeProfile"
+                    cmd = [chrome, '--remote-debugging-port=9222', f'--user-data-dir={profiledir}']
+                    print('use browser: ', cmd)
+                    subprocess.Popen(cmd)
+                    break
         finally:
             sock.close()
         

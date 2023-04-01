@@ -1,5 +1,6 @@
 from selenium.webdriver.common.keys import Keys
 from datetime import datetime
+from selenium import webdriver
 
 import re
 
@@ -27,7 +28,7 @@ class form_base:
             elem.clear()
             elem.send_keys(val)
         except Exception as e:
-            print(str(e))
+            print(key, val, str(e))
             print('%% Failed, please input manually.')
 
     def set_value_list(self, key, val):
@@ -39,7 +40,7 @@ class form_base:
             elem.send_keys(val)
             elem.send_keys(Keys.RETURN)
         except Exception as e:
-            print(str(e))
+            print(key, val, str(e))
             print('%% Failed, please input manually.')
 
     def check_button(self, key):
@@ -50,8 +51,15 @@ class form_base:
         try:
             elem.click()
         except Exception as e:
-            print(str(e))
+            print(key, str(e))
             print('%% Failed, please input manually.')
+
+    def click_button(self, key):
+        action = webdriver.ActionChains(self.driver)
+        element = self.driver.find_element_by_id(key)
+        #action.move_to_element(element)
+        action.click(element)
+        action.perform()
 
     def get_country_code(self, country):
         if country == 'UK':

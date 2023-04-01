@@ -97,8 +97,10 @@ class mod1(form_base):
         self.main_application_handle = driver.current_window_handle
         
         if not self.collect_mode:
-            print('processing info: ', students[-1][0])
-
+            print('\n\n ================ personal info ================= \n', students[-1][3])
+            print('\n\n ================= edu info: ================= \n', students[-1][1])
+            print('\n\n ================= application info: ================= \n', students[-1][2])
+            
         return self.main_application_handle
 
     def fill_personal_info(self):
@@ -157,7 +159,7 @@ class mod1(form_base):
         self.set_value(parent_address1, personal_info['line1'])
         self.set_value(parent_address2, personal_info['line2'])
         self.set_value(parent_address3, personal_info['line3'])
-        self.set_value(parent_town, personal_info['city'])
+        self.set_value(parent_town, personal_info['city'])//*[@id="form_email_applicant"]
         self.set_value(parent_state, personal_info['province'])
         self.set_value(parent_postcode, post)
 
@@ -172,7 +174,7 @@ class mod1(form_base):
         nationality = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
         is_aboriginal = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/div/div/div/input'
         hometongue = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/div/div/div/input'
-        
+        //*[@id="form_email_applicant"]
         self.set_value_list(born_country, 'China (Excludes SARS and Taiwan)')
         self.set_value_list(au_citizenship, 'Other (non resident)')
         self.set_value_list(nationality, 'China (Excludes SARS and Taiwan)')
@@ -378,7 +380,7 @@ class mod1(form_base):
             self.fill_further_references()
         elif title == 'Declaration':
             print('Please confirm.')
-            return self.new_application()
+            #return self.new_application()
         elif title == 'Manage your application fee':
             pass
         else:
