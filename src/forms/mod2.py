@@ -53,12 +53,16 @@ class mod2(form_base):
         personal_info = self.data[-1][0]
         self.check_button('//*[@id="collapse1"]/div[1]/div[3]/div/div[2]/span/span[1]/span/span[2]/b')
         self.set_value_list('/html/body/span/span/span[1]/input', 'Mr' if personal_info['Gender'] == 'Male' else 'Miss')
+        time.sleep(0.5)
+
         self.set_value('//*[@id="form_firstname"]', personal_info['Given Name'])
         self.set_value('//*[@id="form_familyname"]', personal_info['Family Name'])
         self.check_button('//*[@id="form_changedname_1"]')
         
         # Identity
         self.check_button('/html/body/div[1]/div[2]/div[1]/div/form/div[1]/div[2]/div[1]/h4/a/i')
+        time.sleep(1)
+        
         dd,mm,yyyy = personal_info['DOB (dd/mm/yyyy)'].split('/')
         self.check_button('//*[@id="collapse2"]/div[1]/div[3]/div/div[2]/div/span/span[1]/span/span[2]/b')
         self.set_value_list('/html/body/span/span/span[1]/input', dd)
