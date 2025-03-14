@@ -36,4 +36,15 @@ Expand-Archive $fmFilePath -DestinationPath C:\ -Force
 
 $command = 'C:\Python\python.exe -m pip install --upgrade ' + $list_libraries + $proxy_chain	#install/upgrade libraries
 Invoke-Expression $command
+
+# Install form-master package itself (if already published to PyPI)
+Write-Host "Installing form-master package..."
+try {
+    Invoke-Expression "C:\Python\python.exe -m pip install form-master$proxy_chain"
+    Write-Host "form-master package installed successfully" -ForegroundColor Green
+} catch {
+    Write-Host "Could not install form-master package from PyPI. Installing from local source..." -ForegroundColor Yellow
+    Invoke-Expression "C:\Python\python.exe -m pip install -e .$proxy_chain"
+}
+
 Invoke-Expression '.\context.reg'
