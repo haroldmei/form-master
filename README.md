@@ -1,15 +1,3 @@
-# FormMaster
-
-FormMaster is an automation tool designed to streamline the university application process for students applying to Australian universities. The system uses Selenium WebDriver to interact with university application portals and automatically fill in application forms based on student data.
-
-## Features
-
-- Extracts student information from Word documents (.docx) containing application details
-- Supports multiple Australian universities:
-  - USYD (Sydney University)
-  - UNSW (New South Wales University)
-- Provides a user-friendly interface for triggering form filling operations
-- Handles repetitive form tasks while allowing manual intervention
 
 ## Installation
 
