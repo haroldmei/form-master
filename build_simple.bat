@@ -13,6 +13,13 @@ if not exist %NSIS_PATH% (
     exit /b 1
 )
 
+rem Get NSIS directory path (simpler approach)
+for /f "tokens=*" %%a in ('echo %NSIS_PATH%') do (
+    set NSIS_FULL=%%~a
+)
+set NSIS_DIR=%NSIS_FULL:"=%
+set NSIS_DIR=%NSIS_DIR:makensis.exe=%
+
 rem Check if Python is installed
 python --version >nul 2>nul
 if %ERRORLEVEL% neq 0 (
@@ -54,6 +61,19 @@ if not exist "build\drivers\chromedriver\chromedriver.exe" (
 if not exist "build\drivers\geckodriver\geckodriver.exe" (
     echo Please download GeckoDriver manually from https://github.com/mozilla/geckodriver/releases
     echo and place geckodriver.exe in build\drivers\geckodriver\
+)
+
+rem Create icon file for context menu if it doesn't exist
+if not exist "build\formmaster.ico" (
+    echo Creating Form-Master icon...
+    powershell -Command "& {Add-Type -AssemblyName System.Drawing; $icon = New-Object System.Drawing.Bitmap 32, 32; $g = [System.Drawing.Graphics]::FromImage($icon); $g.Clear([System.Drawing.Color]::FromArgb(0, 120, 215)); $font = New-Object System.Drawing.Font('Arial', 16, [System.Drawing.FontStyle]::Bold); $g.DrawString('FM', $font, [System.Drawing.Brushes]::White, 2, 4); $icon.Save('build\formmaster.ico', [System.Drawing.Imaging.ImageFormat]::Icon); $g.Dispose(); $icon.Dispose();}"
+    if %ERRORLEVEL% neq 0 (
+        echo Failed to create icon file. Using default NSIS icon.
+        copy "%NSIS_DIR%Contrib\Graphics\Icons\modern-install.ico" "build\formmaster.ico"
+        if %ERRORLEVEL% neq 0 (
+            echo Could not copy default icon. Will proceed without an icon.
+        )
+    )
 )
 
 rem Build the installer using the simple script

@@ -73,6 +73,36 @@ Section "Install"
     ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt"'
     ExecWait 'python -m pip install -e "$INSTDIR"'
     
+    ; Create formmaster.ico for context menu
+    SetOutPath "$INSTDIR"
+    ${IfNot} ${FileExists} "$INSTDIR\formmaster.ico"
+        File "build\formmaster.ico"
+    ${EndIf}
+    
+    ; Create and update context menu registry entries
+    DetailPrint "Setting up context menu integration..."
+    
+    ; Create context.reg with proper paths from template
+    FileOpen $0 "$INSTDIR\context.reg" w
+    FileWrite $0 "Windows Registry Editor Version 5.00$\r$\n$\r$\n"
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]$\r$\n"
+    FileWrite $0 '@="Open with Form-Master"$\r$\n'
+    FileWrite $0 '"Icon"="$INSTDIR\formmaster.ico"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\command]$\r$\n"
+    FileWrite $0 '@="cmd.exe /k cd \\"%V\\" && python -m formmaster.formfiller"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster]$\r$\n"
+    FileWrite $0 '@="Process with Form-Master"$\r$\n'
+    FileWrite $0 '"Icon"="$INSTDIR\formmaster.ico"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\command]$\r$\n"
+    FileWrite $0 '@="cmd.exe /k cd \\"%1\\" && python -m formmaster.formfiller \\"%1\\""$\r$\n'
+    FileClose $0
+    
+    ; Import the registry file
+    ExecWait 'regedit /s "$INSTDIR\context.reg"'
+    
     ; Create shortcuts
     CreateDirectory "$SMPROGRAMS\Form-Master"
     CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k python -m formmaster.formfiller'
@@ -90,6 +120,11 @@ SectionEnd
 
 Section "Uninstall"
     DetailPrint "Uninstalling Form-Master..."
+    
+    ; Remove context menu entries
+    DetailPrint "Removing context menu integration..."
+    DeleteRegKey HKCR "Directory\Background\shell\FormMaster"
+    DeleteRegKey HKCR "Directory\shell\FormMaster"
     
     ; Uninstall package
     ExecWait 'python -m pip uninstall -y form-master'
