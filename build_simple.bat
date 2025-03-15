@@ -76,6 +76,60 @@ if not exist "build\formmaster.ico" (
     )
 )
 
+echo Copying context.reg.template file...
+if not exist "context.reg.template" (
+    echo ERROR: context.reg.template not found. Creating a default template...
+    (
+        echo Windows Registry Editor Version 5.00
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]
+        echo @="Form-Master"
+        echo "Icon"="PYTHON_PATH"
+        echo "SubCommands"=""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general]
+        echo @="General Form-Master"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general\command] 
+        echo @="\"PYTHON_PATH\" -m formfiller \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd]
+        echo @="Sydney University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw]
+        echo @="New South Wales University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster]
+        echo @="Process with Form-Master"
+        echo "Icon"="PYTHON_PATH"
+        echo "SubCommands"=""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general]
+        echo @="General Form-Master"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general\command]
+        echo @="\"PYTHON_PATH\" -m formfiller \"%%1\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd]
+        echo @="Sydney University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%1\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw]
+        echo @="New South Wales University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%1\""
+    ) > context.reg.template
+)
+
 rem Build the installer using the simple script
 echo Building installer...
 %NSIS_PATH% simple_installer.nsi

@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -23,13 +23,13 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
     ],
-    package_dir={"": "src"},
-    packages=find_packages(where="src"),
+    py_modules=["formfiller"],  # Use individual modules instead of packages
+    package_dir={"": "src"},    # Source directory where modules can be found
     python_requires=">=3.9",
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "form-master=formmaster.formfiller:main",
+            "form-master=formfiller:main",  # Direct reference to formfiller.py
         ],
     },
     include_package_data=True,

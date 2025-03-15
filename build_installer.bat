@@ -114,6 +114,61 @@ python -m pip download wheel -d build\packages
 python -m pip download setuptools -d build\packages
 python -m pip download pip -d build\packages
 
+rem Ensure context.reg.template is present and up-to-date
+echo Checking for context.reg.template...
+if not exist "context.reg.template" (
+    echo Creating context.reg.template...
+    (
+        echo Windows Registry Editor Version 5.00
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]
+        echo @="Form-Master"
+        echo "Icon"="PYTHON_PATH"
+        echo "SubCommands"=""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general]
+        echo @="General Form-Master"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general\command] 
+        echo @="\"PYTHON_PATH\" -m formfiller \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd]
+        echo @="Sydney University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw]
+        echo @="New South Wales University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%V\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster]
+        echo @="Process with Form-Master"
+        echo "Icon"="PYTHON_PATH"
+        echo "SubCommands"=""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general]
+        echo @="General Form-Master"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general\command]
+        echo @="\"PYTHON_PATH\" -m formfiller \"%%1\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd]
+        echo @="Sydney University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%1\""
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw]
+        echo @="New South Wales University Application"
+        echo.
+        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw\command]
+        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%1\""
+    ) > context.reg.template
+)
+
 rem Build the installer using the simple script (more reliable)
 echo Running NSIS compiler with simple installer script...
 makensis simple_installer.nsi

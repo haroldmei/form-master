@@ -1,15 +1,47 @@
 Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]
-@="Open with Form-Master"
-"Icon"="INSTALL_PATH\\formmaster.ico"
+@="Form-Master"
+"Icon"="PYTHON_PATH"
+"SubCommands"=""
 
-[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\command]
-@="cmd.exe /k cd \"%V\" && python -m formmaster.formfiller"
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general]
+@="General Form-Master"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general\command]
+@="\"PYTHON_PATH\" -m formfiller \"%V\""
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd]
+@="Sydney University Application"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd\command]
+@="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%V\""
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw]
+@="New South Wales University Application"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw\command]
+@="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%V\""
 
 [HKEY_CLASSES_ROOT\Directory\shell\FormMaster]
 @="Process with Form-Master"
-"Icon"="INSTALL_PATH\\formmaster.ico"
+"Icon"="PYTHON_PATH"
+"SubCommands"=""
 
-[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\command]
-@="cmd.exe /k cd \"%1\" && python -m formmaster.formfiller \"%1\""
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general]
+@="General Form-Master"
+
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general\command]
+@="\"PYTHON_PATH\" -m formfiller \"%1\""
+
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd]
+@="Sydney University Application"
+
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd\command]
+@="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%1\""
+
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw]
+@="New South Wales University Application"
+
+[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw\command]
+@="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%1\""
