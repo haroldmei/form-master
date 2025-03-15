@@ -2,7 +2,7 @@
 Unicode true
 
 !define APPNAME "Form-Master"
-!define VERSION "0.1.3"
+!define VERSION "0.1.4"
 !define PYTHON_VERSION "3.11.4"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
@@ -161,14 +161,14 @@ Section "Install"
     
     ; First install pip, setuptools and wheel from local files
     DetailPrint "Installing base packages..."
-    nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" pip setuptools wheel'
+    nsExec::ExecToStack '"$9" -m pip install --no-index --find-links="$INSTDIR\packages" pip setuptools wheel'
     Pop $0
     Pop $1
     DetailPrint "Base package install output: $1"
     
     ; Install all required packages from local files
     DetailPrint "Installing required packages from local files..."
-    nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "src\requirements.txt"'
+    nsExec::ExecToStack '"$9" -m pip install --no-index --find-links="$INSTDIR\packages" -r "src\requirements.txt"'
     Pop $0
     Pop $1
     DetailPrint "Requirements install output: $1"
@@ -177,12 +177,48 @@ Section "Install"
     FindFirst $2 $3 "$INSTDIR\packages\formmaster-*.whl"
     ${If} $2 != ""
         DetailPrint "Installing formmaster from local wheel: $3"
-        nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" "$3"'
+        nsExec::ExecToStack '"$9" -m pip install --no-deps --no-index --find-links="$INSTDIR\packages" "$INSTDIR\packages\$3"'
+        Pop $0
+        Pop $1
+        DetailPrint "Wheel installation result: $0 - $1"
         FindClose $2
     ${Else}
         FindClose $2
         DetailPrint "No wheel found. Installing from source..."
-        nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" -e .'
+        ; Create a temporary directory with just setup.py and the src directory
+        CreateDirectory "$TEMP\formmaster-install"
+        CopyFiles "$INSTDIR\setup.py" "$TEMP\formmaster-install"
+        CreateDirectory "$TEMP\formmaster-install\src"
+        CopyFiles /SILENT "$INSTDIR\src\*.*" "$TEMP\formmaster-install\src"
+        
+        ; Install from the temporary directory
+        SetOutPath "$TEMP\formmaster-install"
+        nsExec::ExecToStack '"$9" -m pip install -e .'
+        Pop $0
+        Pop $1
+        DetailPrint "Source installation result: $0 - $1"
+    ${EndIf}
+    
+    ; Verify installation 
+    DetailPrint "Verifying formmaster installation..."
+    nsExec::ExecToStack '"$9" -c "import formmaster; print(\"Formmaster successfully imported\")"'
+    Pop $0
+    Pop $1
+    DetailPrint "Formmaster import check: $0 - $1"
+    
+    ; If import fails, try to install using pip directly from PyPI as a fallback
+    ${If} $0 != 0
+        DetailPrint "WARNING: Formmaster not installed correctly. Trying direct install..."
+        nsExec::ExecToStack '"$9" -m pip install formmaster'
+        Pop $0
+        Pop $1
+        DetailPrint "Direct install result: $0 - $1"
+        
+        ; Check again
+        nsExec::ExecToStack '"$9" -c "import formmaster; print(\"Formmaster successfully imported\")"'
+        Pop $0
+        Pop $1
+        DetailPrint "Formmaster import check (second attempt): $0 - $1"
     ${EndIf}
     
     ; Configure environment for drivers
@@ -206,26 +242,26 @@ Section "Install"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formmaster --uni=usyd \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd \"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney]$\r$\n"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formmaster --uni=usyd \"%1\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd \"%1\""$\r$\n$\r$\n'
     
     ; UNSW entries
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formmaster --uni=unsw \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw \"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formmaster --uni=unsw \"%1\""$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw \"%1\""$\r$\n'
     
     FileClose $0
     
@@ -235,9 +271,9 @@ Section "Install"
     
     ; Create shortcuts with absolute Python path
     CreateDirectory "$SMPROGRAMS\Form-Master"
-    CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k "$9" -m formmaster'
+    CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k "$9" -m formfiller'
     CreateShortcut "$SMPROGRAMS\Form-Master\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-    CreateShortcut "$DESKTOP\Form-Master.lnk" "cmd.exe" '/k "$9" -m formmaster'
+    CreateShortcut "$DESKTOP\Form-Master.lnk" "cmd.exe" '/k "$9" -m formfiller'
     
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"

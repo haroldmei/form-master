@@ -8,7 +8,7 @@ with open("src/requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="formmaster",
-    version="0.1.3",
+    version="0.1.4",
     author="Form-Master Team",
     author_email="maintainer@example.com",
     description="Form automation tool for Australian university application processes",
