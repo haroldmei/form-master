@@ -76,38 +76,6 @@ if not exist "build\formmaster.ico" (
     )
 )
 
-echo Copying context.reg.template file...
-if not exist "context.reg.template" (
-    echo ERROR: context.reg.template not found. Creating a default template...
-    (
-        echo Windows Registry Editor Version 5.00
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\USydney]
-        echo @="Sydney University"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]
-        echo @="python -m formfiller --uni=usyd \"%%V\""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\USydney]
-        echo @="Sydney University"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\USydney\command]
-        echo @="python -m formfiller --uni=usyd \"%%1\""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]
-        echo @="New South Wales University"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]
-        echo @="python -m formfiller --uni=unsw \"%%V\""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\UNSW]
-        echo @="New South Wales University"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]
-        echo @="python -m formfiller --uni=unsw \"%%1\""
-    ) > context.reg.template
-)
-
 rem Build the installer using the simple script
 echo Building installer...
 %NSIS_PATH% simple_installer.nsi
