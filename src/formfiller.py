@@ -16,7 +16,7 @@ from forms.mod1 import mod1
 from forms.mod2 import mod2
 
 import os
-import fire
+import argparse
 import subprocess
 import socket
 import time
@@ -122,5 +122,22 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
     finally:
         mouse_listener.stop()
 
+def parse_arguments():
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(description='Form-Master - Automate form filling for university applications.')
+    
+    parser.add_argument('--dir', type=str, 
+                      default='C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie',
+                      help='Directory containing student data')
+    
+    parser.add_argument('--uni', type=str, choices=['usyd', 'unsw'], default='usyd',
+                      help='Target university (usyd or unsw)')
+    
+    parser.add_argument('--mode', type=int, default=0,
+                      help='Operation mode (0 for normal operation)')
+    
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    fire.Fire(run)
+    args = parse_arguments()
+    run(dir=args.dir, uni=args.uni, mode=args.mode)

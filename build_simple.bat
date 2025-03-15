@@ -73,7 +73,6 @@ python -m pip download selenium==4.10.0 -d build\packages --only-binary=:all:
 python -m pip download pynput==1.7.6 -d build\packages --only-binary=:all:
 python -m pip download pandas==1.5.3 -d build\packages --only-binary=:all:
 python -m pip download python-docx==0.8.11 -d build\packages --only-binary=:all:
-python -m pip download fire==0.5.0 -d build\packages --only-binary=:all:
 
 rem Extra focus on pynput dependencies for Python 3.9
 echo Downloading pynput and dependencies specifically for Python 3.9...
@@ -100,7 +99,7 @@ python -m pip download six pywin32 pyobjc-core pyobjc-framework-Quartz -d build\
 
 rem Verify critical packages were downloaded successfully
 echo Verifying critical packages...
-for %%p in (selenium pynput pandas python-docx fire) do (
+for %%p in (selenium pynput pandas python-docx) do (
     dir build\packages\%%p* >nul 2>nul
     if %ERRORLEVEL% neq 0 (
         echo CRITICAL ERROR: Package %%p not found after download attempt!

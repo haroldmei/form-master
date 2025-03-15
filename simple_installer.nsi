@@ -170,11 +170,10 @@ Section "Install"
         ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pandas' $0
         ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput' $0
         ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" python-docx' $0
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" fire' $0
         ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" webdriver-manager' $0
         
         DetailPrint "Individual installations completed. Checking critical imports..."
-        nsExec::ExecToStack 'python -c "import pandas, selenium, fire, pynput; print("Imports successful")"'
+        nsExec::ExecToStack 'python -c "import pandas, selenium, pynput; print(\"Imports successful\")"'
         Pop $0
         Pop $1
         DetailPrint "Import test result: $0"
