@@ -3,7 +3,7 @@ Unicode true
 
 !define APPNAME "Form-Master"
 !define VERSION "0.1.0"
-!define PYTHON_VERSION "3.11.1"
+!define PYTHON_VERSION "3.9.13"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
@@ -34,12 +34,12 @@ Section "Install"
     
     ; Check if Python is installed
     DetailPrint "Checking for Python installation..."
-    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
-    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.11\InstallPath" ""
+    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
+    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
     
     ${If} $0 != ""
     ${OrIf} $1 != ""
-        DetailPrint "Python 3.11 is already installed."
+        DetailPrint "Python 3.9 is already installed."
     ${Else}
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
         File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
@@ -66,23 +66,137 @@ Section "Install"
     SetOutPath "$INSTDIR\drivers\geckodriver"
     File "build\drivers\geckodriver\geckodriver.exe"
     
-    ; Install everything
+    ; Install everything from local packages
     DetailPrint "Installing Form-Master and dependencies..."
-    ExecWait 'python -m pip install --upgrade pip'
-    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" wheel setuptools'
-    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt"'
-    ExecWait 'python -m pip install -e "$INSTDIR"'
+    
+    ; First install core tools from local packages
+    DetailPrint "Installing core tools from local packages..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pip wheel setuptools' $0
+    ${If} $0 != 0
+        DetailPrint "Warning: Core tools installation failed with code $0"
+    ${EndIf}
+    
+    ; Install selenium specifically first from local packages
+    DetailPrint "Installing Selenium WebDriver from local package..."
+    
+    ; Find the selenium package in our packages directory
+    FindFirst $1 $2 "$INSTDIR\packages\selenium*.whl"
+    ${If} $1 != ""
+        DetailPrint "Found Selenium package: $2"
+        ExecWait 'python -m pip install --no-index --no-deps "$INSTDIR\packages\$2"' $0
+        FindClose $1
+        ${If} $0 != 0
+            DetailPrint "Warning: Failed to install Selenium directly. Trying with dependencies..."
+            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.10.0' $0
+        ${EndIf}
+    ${Else}
+        FindClose $1
+        DetailPrint "Selenium package not found by name, trying by version..."
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.10.0' $0
+    ${EndIf}
+    
+    ${If} $0 != 0
+        DetailPrint "ERROR: All attempts to install Selenium failed. Installation may not work correctly."
+        MessageBox MB_ICONEXCLAMATION|MB_OK "Failed to install Selenium. Form-Master may not function correctly."
+    ${EndIf}
+    
+    ; Special handling for pynput which sometimes causes problems
+    DetailPrint "Installing pynput package specifically..."
+    FindFirst $1 $2 "$INSTDIR\packages\pynput*.whl"
+    ${If} $1 != ""
+        DetailPrint "Found pynput package: $2"
+        ExecWait 'python -m pip install --no-index --no-deps "$INSTDIR\packages\$2"' $0
+        FindClose $1
+        ${If} $0 != 0
+            DetailPrint "Warning: Failed to install pynput directly. Trying with dependencies..."
+            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput==1.7.6' $0
+            ${If} $0 != 0
+                DetailPrint "CRITICAL: Failed to install pynput from local packages."
+                MessageBox MB_YESNO|MB_ICONQUESTION "Failed to install pynput from local packages. Would you like to install it from the internet?" IDYES install_online IDNO skip_online
+                install_online:
+                    DetailPrint "Installing pynput from internet..."
+                    ExecWait 'python -m pip install pynput==1.7.6' $0
+                skip_online:
+            ${EndIf}
+        ${EndIf}
+    ${Else}
+        FindClose $1
+        DetailPrint "Pynput package not found by name, trying by version..."
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput==1.7.6' $0
+        ${If} $0 != 0
+            MessageBox MB_YESNO|MB_ICONQUESTION "Failed to install pynput from local packages. Would you like to install it from the internet?" IDYES install_online2 IDNO skip_online2
+            install_online2:
+                DetailPrint "Installing pynput from internet..."
+                ExecWait 'python -m pip install pynput==1.7.6' $0
+            skip_online2:
+        ${EndIf}
+    ${EndIf}
+    
+    ; Verify pynput installed correctly
+    DetailPrint "Verifying pynput installation..."
+    nsExec::ExecToStack 'python -c "import pynput; print("Pynput version: " + pynput.__version__)"'
+    Pop $0
+    Pop $1
+    DetailPrint "Pynput check result: $0"
+    DetailPrint "Pynput version info: $1"
+    ${If} $0 != 0
+        MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Pynput installation could not be verified. Form-Master may not function correctly with keyboard/mouse automation features."
+    ${EndIf}
+    
+    ; Install all other dependencies from local packages
+    DetailPrint "Installing all dependencies from local packages..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt"' $0
+    ${If} $0 != 0
+        DetailPrint "Warning: Failed to install all dependencies at once. Trying individual installations..."
+        
+        ; Try individual installations of critical packages
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pandas' $0
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput' $0
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" python-docx' $0
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" fire' $0
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" webdriver-manager' $0
+        
+        DetailPrint "Individual installations completed. Checking critical imports..."
+        nsExec::ExecToStack 'python -c "import pandas, selenium, fire, pynput; print("Imports successful")"'
+        Pop $0
+        Pop $1
+        DetailPrint "Import test result: $0"
+        DetailPrint "Import test output: $1"
+        
+        ${If} $0 != 0
+            MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Not all dependencies could be installed from local packages. Form-Master may not function correctly."
+        ${EndIf}
+    ${EndIf}
+    
+    ; Verify selenium installed correctly
+    DetailPrint "Verifying Selenium installation..."
+    nsExec::ExecToStack 'python -c "import selenium; print("Selenium version: " + selenium.__version__)"'
+    Pop $0
+    Pop $1
+    DetailPrint "Selenium check: $1"
+    
+    ; Install Form-Master
+    DetailPrint "Installing Form-Master..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -e "$INSTDIR"' $0
+    
+    ${If} $0 != 0
+        DetailPrint "Warning: Could not install Form-Master with --no-index. Trying direct install..."
+        ExecWait 'python -m pip install -e "$INSTDIR"' $0
+        ${If} $0 != 0
+            MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Failed to install Form-Master. The application may not work properly."
+        ${EndIf}
+    ${EndIf}
     
     ; Find Python executable path
     DetailPrint "Locating Python executable..."
     StrCpy $9 "" ; Variable to store Python path
     
     ; Try to get Python path from registry
-    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
+    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
     ${If} $9 != ""
         StrCpy $9 "$9python.exe"
     ${Else}
-        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.11\InstallPath" ""
+        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
         ${If} $9 != ""
             StrCpy $9 "$9python.exe"
         ${EndIf}

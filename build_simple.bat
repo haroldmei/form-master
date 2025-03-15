@@ -36,7 +36,7 @@ if not exist build\drivers\geckodriver mkdir build\drivers\geckodriver
 
 rem Download Python installer
 echo Downloading Python installer...
-set PYTHON_VERSION=3.11.1
+set PYTHON_VERSION=3.9.13
 set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
 set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/%PYTHON_INSTALLER%
 
@@ -45,12 +45,63 @@ if not exist "build\%PYTHON_INSTALLER%" (
     powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%PYTHON_URL%' -OutFile 'build\%PYTHON_INSTALLER%'}"
 )
 
-rem Download dependencies
-echo Downloading Python dependencies...
+rem Download ALL Python dependencies including nested dependencies
+echo Downloading ALL Python dependencies with recursive resolution...
 python -m pip install --upgrade pip wheel
-python -m pip download -r src\requirements.txt -d build\packages --only-binary=:all:
-python -m pip download webdriver-manager -d build\packages --only-binary=:all:
-python -m pip download wheel setuptools pip -d build\packages
+echo Creating a complete requirements list...
+
+rem Create a temporary requirements file with specific versions
+python -c "import pkg_resources; open('full_requirements.txt', 'w').write('\n'.join(['=='.join([d.project_name, d.version]) for d in pkg_resources.working_set if d.project_name.lower() in ['selenium', 'pandas', 'pynput', 'python-docx', 'fire', 'wheel', 'setuptools', 'pip']]))"
+
+rem Add all specific requirements
+echo Adding all requirements from requirements.txt with versions...
+python -c "import pkg_resources; reqs = [line.strip() for line in open('src/requirements.txt') if line.strip() and not line.startswith('#')]; open('full_requirements.txt', 'a').write('\n' + '\n'.join(reqs))"
+
+type full_requirements.txt
+
+rem Download all specified packages with their dependencies
+echo Downloading all packages with dependencies...
+python -m pip download -r full_requirements.txt -d build\packages --only-binary=:all:
+
+rem Download additional required packages
+echo Downloading additional utility packages...
+python -m pip download webdriver-manager urllib3 certifi -d build\packages --only-binary=:all:
+
+rem Special handling for critical packages - ensure they're properly downloaded
+echo Ensuring critical packages are downloaded...
+python -m pip download selenium==4.10.0 -d build\packages --only-binary=:all:
+python -m pip download pynput==1.7.6 -d build\packages --only-binary=:all:
+python -m pip download pandas==1.5.3 -d build\packages --only-binary=:all:
+python -m pip download python-docx==0.8.11 -d build\packages --only-binary=:all:
+python -m pip download fire==0.5.0 -d build\packages --only-binary=:all:
+
+rem Download all pynput dependencies explicitly
+echo Downloading pynput dependencies...
+python -m pip download six pywin32 pyobjc-core pyobjc-framework-Quartz -d build\packages --only-binary=:all:
+
+rem Verify critical packages were downloaded successfully
+echo Verifying critical packages...
+for %%p in (selenium pynput pandas python-docx fire) do (
+    dir build\packages\%%p* >nul 2>nul
+    if %ERRORLEVEL% neq 0 (
+        echo CRITICAL ERROR: Package %%p not found after download attempt!
+        echo Attempting emergency download directly...
+        python -m pip download %%p --no-deps -d build\packages
+    )
+)
+
+rem Test importing packages to ensure they work
+echo Testing package imports...
+python -c "import selenium, pandas; print('Selenium and pandas import successful')"
+python -c "import pynput; print('Pynput import successful')" || (
+    echo WARNING: Pynput not installed or not working in the build environment.
+    echo Installing pynput in build environment for testing...
+    python -m pip install pynput
+    python -c "import pynput; print('Pynput now installed')"
+)
+
+rem Cleanup temporary file
+del full_requirements.txt
 
 rem Download WebDrivers
 echo Downloading WebDrivers...
