@@ -14,6 +14,42 @@ RequestExecutionLevel admin
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
+; Function to escape backslashes for registry
+Function EscapeBackslashes
+  Exch $0 ; input string
+  Push $1 ; position
+  Push $2 ; character
+  Push $3 ; output string
+  
+  StrCpy $1 0
+  StrCpy $3 ""
+  
+  loop:
+    StrCpy $2 $0 1 $1
+    StrCmp $2 "" done
+    StrCmp $2 "\" replace_backslash
+    Goto append_char
+    
+  replace_backslash:
+    StrCpy $3 "$3\\"
+    Goto next
+    
+  append_char:
+    StrCpy $3 "$3$2"
+    
+  next:
+    IntOp $1 $1 + 1
+    Goto loop
+    
+  done:
+    StrCpy $0 $3
+    
+    Pop $3
+    Pop $2
+    Pop $1
+    Exch $0
+FunctionEnd
+
 ; Modern UI settings
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
@@ -37,9 +73,15 @@ Section "Install"
     ReadRegStr $0 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
     ReadRegStr $1 HKCU "Software\Python\PythonCore\3.11\InstallPath" ""
     
+    ; Initialize Python path variable
+    StrCpy $9 ""
+    
     ${If} $0 != ""
-    ${OrIf} $1 != ""
-        DetailPrint "Python 3.11 is already installed."
+        DetailPrint "Python 3.11 is already installed in system registry."
+        StrCpy $9 "$0python.exe"
+    ${ElseIf} $1 != ""
+        DetailPrint "Python 3.11 is already installed in user registry."
+        StrCpy $9 "$1python.exe"
     ${Else}
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
         ; Include Python installer in the package
@@ -54,7 +96,45 @@ Section "Install"
             MessageBox MB_OK|MB_ICONEXCLAMATION "Python installation failed. Please install Python 3.11 manually."
             Abort
         ${EndIf}
+        
+        ; Get the Python path after installation
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
+        ${If} $0 != ""
+            StrCpy $9 "$0python.exe"
+        ${Else}
+            ; If we still can't find it, try alternate method
+            nsExec::ExecToStack 'where python'
+            Pop $0
+            Pop $1
+            ${If} $0 == 0
+                ; Extract the first line
+                StrCpy $2 0
+                ${Do}
+                    StrCpy $3 $1 1 $2
+                    ${If} $3 == "$\r"
+                    ${OrIf} $3 == "$\n"
+                    ${OrIf} $3 == ""
+                        ${Break}
+                    ${EndIf}
+                    IntOp $2 $2 + 1
+                ${Loop}
+                StrCpy $9 $1 $2 ; First line only
+            ${Else}
+                ; Fallback to default Python path
+                StrCpy $9 "python.exe"
+            ${EndIf}
+        ${EndIf}
     ${EndIf}
+    
+    DetailPrint "Using Python executable: $9"
+    
+    ; Get and prepare Python path with escaped backslashes for registry
+    StrCpy $R9 $9 ; Copy original Python path to R9
+    Push $R9     ; Prepare for EscapeBackslashes function
+    Call EscapeBackslashes
+    Pop $R9      ; R9 now has backslashes escaped
+    
+    DetailPrint "Python executable for registry: $R9"
     
     ; Create installation directory
     SetOutPath "$INSTDIR"
@@ -122,26 +202,26 @@ Section "Install"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="python -m formmaster --uni=usyd \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formmaster --uni=usyd \"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney]$\r$\n"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="python -m formmaster --uni=usyd \"%1\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formmaster --uni=usyd \"%1\""$\r$\n$\r$\n'
     
     ; UNSW entries
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="python -m formmaster --uni=unsw \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formmaster --uni=unsw \"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="python -m formmaster --uni=unsw \"%1\""$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formmaster --uni=unsw \"%1\""$\r$\n'
     
     FileClose $0
     
@@ -149,11 +229,11 @@ Section "Install"
     DetailPrint "Importing registry entries..."
     ExecWait 'regedit /s "$INSTDIR\context.reg"'
     
-    ; Create shortcuts
+    ; Create shortcuts with absolute Python path
     CreateDirectory "$SMPROGRAMS\Form-Master"
-    CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k python -m formmaster'
+    CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k "$9" -m formmaster'
     CreateShortcut "$SMPROGRAMS\Form-Master\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-    CreateShortcut "$DESKTOP\Form-Master.lnk" "cmd.exe" '/k python -m formmaster'
+    CreateShortcut "$DESKTOP\Form-Master.lnk" "cmd.exe" '/k "$9" -m formmaster'
     
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
