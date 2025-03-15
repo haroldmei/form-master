@@ -1,5 +1,5 @@
 """
-Form-Master - Automation tool for university application forms.
+FormMaster - Automation tool for university application forms.
 """
 
 __version__ = "0.1.3"

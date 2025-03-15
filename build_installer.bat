@@ -1,5 +1,5 @@
 @echo off
-echo Building Form-Master Installer...
+echo Building FormMaster Installer...
 
 rem Create build directory if it doesn't exist
 if not exist build mkdir build
@@ -63,7 +63,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo Form-Master installer build completed successfully.
-echo Installer location: build\Form-Master-Setup.exe
+echo FormMaster installer build completed successfully.
+echo Installer location: build\FormMaster-Setup.exe
 
 pause

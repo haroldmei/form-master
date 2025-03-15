@@ -174,7 +174,7 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
 
 def parse_arguments():
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Form-Master - Automate form filling for university applications.')
+    parser = argparse.ArgumentParser(description='FormMaster - Automate form filling for university applications.')
     
     parser.add_argument('--dir', type=str, 
                       default='C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie',

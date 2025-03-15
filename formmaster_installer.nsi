@@ -1,14 +1,14 @@
-; Form-Master Compact Installer
+; FormMaster Compact Installer
 Unicode true
 
-!define APPNAME "Form-Master"
-!define VERSION "0.1.7"
+!define APPNAME "FormMaster"
+!define VERSION "0.1.8"
 !define PYTHON_VERSION "3.11.4"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
-OutFile "build\Form-Master-Setup.exe"
-InstallDir "$PROGRAMFILES64\Form-Master"
+OutFile "build\FormMaster-Setup.exe"
+InstallDir "$PROGRAMFILES64\FormMaster"
 RequestExecutionLevel admin
 
 !include "MUI2.nsh"
@@ -156,7 +156,7 @@ Section "Install"
     File /r "src\drivers\*.*"
     
     ; Install formmaster from local packages
-    DetailPrint "Installing Form-Master package from local files..."
+    DetailPrint "Installing FormMaster package from local files..."
     SetOutPath "$INSTDIR"
     
     ; First install pip, setuptools and wheel from local files
@@ -270,31 +270,31 @@ Section "Install"
     ExecWait 'regedit /s "$INSTDIR\context.reg"'
     
     ; Create shortcuts with absolute Python path
-    CreateDirectory "$SMPROGRAMS\Form-Master"
-    CreateShortcut "$SMPROGRAMS\Form-Master\Form-Master.lnk" "cmd.exe" '/k "$9" -m formfiller'
-    CreateShortcut "$SMPROGRAMS\Form-Master\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-    CreateShortcut "$DESKTOP\Form-Master.lnk" "cmd.exe" '/k "$9" -m formfiller'
+    CreateDirectory "$SMPROGRAMS\FormMaster"
+    CreateShortcut "$SMPROGRAMS\FormMaster\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller'
+    CreateShortcut "$SMPROGRAMS\FormMaster\Uninstall.lnk" "$INSTDIR\uninstall.exe"
+    CreateShortcut "$DESKTOP\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller'
     
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"
     
     ; Add uninstall information to Add/Remove Programs
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "DisplayName" "Form-Master"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "UninstallString" '"$INSTDIR\uninstall.exe"'
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "DisplayVersion" "${VERSION}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "Publisher" "Form-Master Team"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "DisplayName" "FormMaster"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "UninstallString" '"$INSTDIR\uninstall.exe"'
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "DisplayVersion" "${VERSION}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "Publisher" "FormMaster Team"
 SectionEnd
 
 Section "Uninstall"
     ; Remove registry entries
-    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master"
+    DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster"
     DeleteRegKey HKCR "Directory\Background\shell\USydney"
     DeleteRegKey HKCR "Directory\shell\USydney"
     DeleteRegKey HKCR "Directory\Background\shell\UNSW"
     DeleteRegKey HKCR "Directory\shell\UNSW"
     
     ; Uninstall the Python package
-    DetailPrint "Uninstalling Form-Master package..."
+    DetailPrint "Uninstalling FormMaster package..."
     nsExec::ExecToStack 'python -m pip uninstall -y formmaster'
     
     ; Remove drivers from user profile
@@ -310,10 +310,10 @@ Section "Uninstall"
     RMDir /r "$INSTDIR\packages"
     
     ; Remove start menu shortcuts
-    Delete "$SMPROGRAMS\Form-Master\Form-Master.lnk"
-    Delete "$SMPROGRAMS\Form-Master\Uninstall.lnk"
-    RMDir "$SMPROGRAMS\Form-Master"
-    Delete "$DESKTOP\Form-Master.lnk"
+    Delete "$SMPROGRAMS\FormMaster\FormMaster.lnk"
+    Delete "$SMPROGRAMS\FormMaster\Uninstall.lnk"
+    RMDir "$SMPROGRAMS\FormMaster"
+    Delete "$DESKTOP\FormMaster.lnk"
     
     ; Remove installation directory if empty
     RMDir "$INSTDIR"

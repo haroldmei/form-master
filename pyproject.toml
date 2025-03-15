@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "formmaster"
-version = "0.1.7"
+version = "0.1.8"
 authors = [
-    {name = "Form-Master Team", email = "maintainer@example.com"},
+    {name = "FormMaster Team", email = "maintainer@example.com"},
 ]
 description = "Form automation tool for Australian university application processes"
 readme = "README.md"

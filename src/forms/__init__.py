@@ -1,5 +1,5 @@
 """
-Form-Master Forms Package.
+FormMaster Forms Package.
 This package contains form modules for different universities.
 """
 

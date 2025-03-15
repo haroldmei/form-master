@@ -1,6 +1,6 @@
-# Form-Master
+# FormMaster
 
-Form-Master is an automation tool designed to streamline the university application process for students applying to Australian universities. The system uses Selenium WebDriver to interact with university application portals and automatically fill in application forms based on student data.
+FormMaster is an automation tool designed to streamline the university application process for students applying to Australian universities. The system uses Selenium WebDriver to interact with university application portals and automatically fill in application forms based on student data.
 
 ## Features
 
@@ -13,7 +13,7 @@ Form-Master is an automation tool designed to streamline the university applicat
 
 ## Installation
 
-You can install Form-Master directly from PyPI:
+You can install FormMaster directly from PyPI:
 
 ```bash
 pip install form-master
@@ -29,7 +29,7 @@ pip install -e .
 
 ## Usage
 
-After installation, you can run Form-Master in two ways:
+After installation, you can run FormMaster in two ways:
 
 ### Command Line
 
