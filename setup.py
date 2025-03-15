@@ -7,10 +7,10 @@ with open("src/requirements.txt", "r", encoding="utf-8") as fh:
     requirements = fh.read().splitlines()
 
 setup(
-    name="form-master",
+    name="formmaster",
     version="0.1.0",
     author="Form-Master Team",
-    author_email="maintainer@example.com",  # Replace with actual contact email
+    author_email="maintainer@example.com",
     description="Form automation tool for Australian university application processes",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -20,16 +20,20 @@ setup(
     },
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: MIT License",
         "Operating System :: Microsoft :: Windows",
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Education",
+        "Topic :: Office/Business :: Office Suites",
     ],
-    py_modules=["formfiller"],  # Use individual modules instead of packages
-    package_dir={"": "src"},    # Source directory where modules can be found
-    python_requires="~=3.11.0",  # Specifically require Python 3.11.x
+    package_dir={"": "src"},
+    py_modules=["formfiller", "etl"],  # Use py_modules for individual Python files
+    python_requires=">=3.11,<3.12",
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "form-master=formfiller:main",  # Direct reference to formfiller.py
+            "formmaster=formfiller:run",  # Direct reference to formfiller.py
         ],
     },
     include_package_data=True,
