@@ -3,7 +3,7 @@ Unicode true
 
 !define APPNAME "Form-Master"
 !define VERSION "0.1.0"
-!define PYTHON_VERSION "3.9.13"
+!define PYTHON_VERSION "3.8.10"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
@@ -34,12 +34,12 @@ Section "Install"
     
     ; Check if Python is installed
     DetailPrint "Checking for Python installation..."
-    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
-    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
+    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.8\InstallPath" ""
+    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.8\InstallPath" ""
     
     ${If} $0 != ""
     ${OrIf} $1 != ""
-        DetailPrint "Python 3.9 is already installed."
+        DetailPrint "Python 3.8 is already installed."
     ${Else}
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
         File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
@@ -208,11 +208,11 @@ Section "Install"
     StrCpy $9 "" ; Variable to store Python path
     
     ; Try to get Python path from registry
-    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
+    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.8\InstallPath" ""
     ${If} $9 != ""
         StrCpy $9 "$9python.exe"
     ${Else}
-        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
+        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.8\InstallPath" ""
         ${If} $9 != ""
             StrCpy $9 "$9python.exe"
         ${EndIf}
