@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
@@ -8,7 +8,7 @@ with open("src/requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="formmaster",
-    version="0.1.1",
+    version="0.1.2",
     author="Form-Master Team",
     author_email="maintainer@example.com",
     description="Form automation tool for Australian university application processes",
@@ -28,12 +28,14 @@ setup(
         "Topic :: Office/Business :: Office Suites",
     ],
     package_dir={"": "src"},
-    py_modules=["formfiller", "etl"],  # Use py_modules for individual Python files
+    # Include both modules and packages
+    packages=find_packages(where="src"),
+    py_modules=["formfiller", "etl"],
     python_requires=">=3.11,<3.12",
     install_requires=requirements,
     entry_points={
         "console_scripts": [
-            "formmaster=formfiller:run",  # Direct reference to formfiller.py
+            "formmaster=formfiller:run",
         ],
     },
     include_package_data=True,
