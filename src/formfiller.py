@@ -23,6 +23,8 @@ import subprocess
 import socket
 import time
 import sys
+import logging
+from datetime import datetime
 
 lock = Lock()
 is_win = (True if os.name == 'nt' else False)
@@ -30,6 +32,38 @@ main_application_handle = None
 module = None
 driver = None
 run_mode = 0
+logger = None
+
+# Setup logging
+def setup_logging():
+    global logger
+    # Create a timestamp for the log filename
+    timestamp = datetime.now().strftime("%y_%m_%d_%H_%M_%S")
+    log_filename = f"formmaster_{timestamp}.log"
+    log_filename = os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', log_filename)
+    
+    # Configure logging with encoding specified for file handler
+    # Set up root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    # File handler with UTF-8 encoding
+    file_handler = logging.FileHandler(log_filename, encoding='utf-8')
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+    
+    # Console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    root_logger.addHandler(console_handler)
+    
+    # Create logger for this module
+    logger = logging.getLogger('formmaster')
+    logger.info(f"Logging setup complete. Log file: {log_filename}")
+    return logger
 
 def on_click(x, y, button, pressed):
     global main_application_handle
@@ -38,7 +72,7 @@ def on_click(x, y, button, pressed):
     if pressed:
         return
     
-    #print('DEBUG >>> ', driver.window_handles, driver.current_window_handle)
+    #logger.debug(f'DEBUG >>> {driver.window_handles}, {driver.current_window_handle}')
     with lock:
         if button.name == 'middle':        
             module.run()
@@ -48,21 +82,22 @@ def on_click(x, y, button, pressed):
             wait = WebDriverWait(driver, 10)
             wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
             if driver.window_handles[-1] != driver.current_window_handle:
-                print('>>> window switching done')
+                logger.info('>>> window switching done')
                 driver.switch_to.window(driver.window_handles[-1])
             return
         else:
             return
 
-
-
 def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), uni = 'usyd', mode = 0):
-
     global main_application_handle
     global module
     global driver
     global run_mode
-
+    global logger
+    
+    # Setup logging
+    logger = setup_logging()
+    
     run_mode = mode
 
     if is_win:
@@ -71,7 +106,7 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         try:
             sock.connect(server_address)
         except:    
-            print(' start the browser ... ')
+            logger.info('Starting the browser...')
             chromes = [
                 f"{os.environ[basedir]}\Google\Chrome\Application\chrome.exe" 
                 for basedir in ['ProgramFiles', 'ProgramFiles(x86)', 'LocalAppData'] 
@@ -81,7 +116,7 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
                 if os.path.isfile(chrome):
                     profiledir = f"{os.environ['LocalAppData']}\selenium\ChromeProfile" if is_win else f"{os.environ['HOME']}/selenium/ChromeProfile"
                     cmd = [chrome, '--remote-debugging-port=9222', f'--user-data-dir={profiledir}']
-                    print('use browser: ', cmd)
+                    logger.info(f'Using browser: {cmd}')
                     subprocess.Popen(cmd)
                     break
         finally:
@@ -94,15 +129,15 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
             # First try to use an existing Chrome instance via the remote debugging port
             driver = webdriver.Chrome(options=chrome_options)
         except Exception as e:
-            print(f"Failed to connect to existing Chrome instance: {e}")
+            logger.error(f"Failed to connect to existing Chrome instance: {e}")
             try:
                 # If that fails, try to use webdriver_manager to get ChromeDriver
-                print("Trying to install ChromeDriver using webdriver_manager...")
+                logger.info("Trying to install ChromeDriver using webdriver_manager...")
                 service = Service(ChromeDriverManager().install())
                 driver = webdriver.Chrome(service=service, options=chrome_options)
             except Exception as e2:
                 # If that fails too, check for locally installed driver in common locations
-                print(f"Failed to install ChromeDriver automatically: {e2}")
+                logger.error(f"Failed to install ChromeDriver automatically: {e2}")
                 # Check installation directory and drivers folder
                 local_driver_paths = [
                     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'drivers', 'chromedriver', 'chromedriver.exe'),
@@ -113,12 +148,13 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
                 
                 for path in local_driver_paths:
                     if os.path.exists(path):
-                        print(f"Using local ChromeDriver at {path}")
+                        logger.info(f"Using local ChromeDriver at {path}")
                         service = Service(executable_path=path)
                         driver = webdriver.Chrome(service=service, options=chrome_options)
                         break
                 else:
                     # If all else fails, raise a clear error
+                    logger.critical("Could not find or install ChromeDriver. Please install it manually and ensure it is in your PATH.")
                     raise RuntimeError("Could not find or install ChromeDriver. Please install it manually and ensure it is in your PATH.")
     else:
         options = FirefoxOptions()
@@ -129,28 +165,35 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
 
     students = []
     if not run_mode:
+        logger.info(f"Loading student data from {dir}")
         students = load(dir)
-        #print(students)
+        logger.info(f"Loaded {len(students)} student records")
 
     if uni == 'usyd':
+        logger.info("Initializing Sydney University module")
         module = mod1(driver, students, run_mode)
     elif uni == 'unsw':
+        logger.info("Initializing UNSW module")
         module = mod2(driver, students, run_mode)
     else:
-        print('uni not yet supported, exit.')
+        logger.error(f"University '{uni}' not supported, exiting.")
         return
 
     main_application_handle = module.login_session()
     try:
+        logger.info("Starting mouse listener")
         mouse_listener = MouseListener(on_click=on_click)
         mouse_listener.start()
 
         # do this idle loop
+        logger.info("Running main loop - waiting for events")
         while True:
             time.sleep(10)
-    except:
-        print('failing exit')
+    except Exception as e:
+        logger.exception("Exception in main loop")
+        logger.error(f"Failing exit: {e}")
     finally:
+        logger.info("Stopping mouse listener")
         mouse_listener.stop()
 
 def parse_arguments():
