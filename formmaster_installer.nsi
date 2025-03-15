@@ -242,26 +242,26 @@ Section "Install"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd --dir=\"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney]$\r$\n"
     FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd \"%1\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=usyd --dir=\"%1\""$\r$\n$\r$\n'
     
     ; UNSW entries
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw --dir=\"%V\""$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW]$\r$\n"
     FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
     
     FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]$\r$\n"
-    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw \"%1\""$\r$\n'
+    FileWrite $0 '@="\"$R9\" -m formfiller --uni=unsw --dir=\"%1\""$\r$\n'
     
     FileClose $0
     
