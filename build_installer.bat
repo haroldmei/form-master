@@ -114,14 +114,22 @@ python -m pip download wheel -d build\packages
 python -m pip download setuptools -d build\packages
 python -m pip download pip -d build\packages
 
-rem Build the installer
-echo Running NSIS compiler...
-makensis installer.nsi
+rem Build the installer using the simple script (more reliable)
+echo Running NSIS compiler with simple installer script...
+makensis simple_installer.nsi
 
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo Compilation failed. Please check for errors in the installer script.
-    exit /b 1
+    echo Compilation with simple_installer.nsi failed. Trying alternative approach...
+    
+    rem Try to build using installer-fixed.bat
+    call installer-fixed.bat
+    
+    if %ERRORLEVEL% neq 0 (
+        echo.
+        echo All compilation attempts failed. Please check NSIS installation and script files.
+        exit /b 1
+    )
 )
 
 echo.

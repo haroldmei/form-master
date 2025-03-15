@@ -168,7 +168,7 @@ Section "Browser Drivers (Recommended)" SectionDrivers
     SetOutPath "$INSTDIR\drivers\geckodriver"
     File "build\drivers\geckodriver\geckodriver.exe"
     
-    ; Add drivers to PATH - simplified version without using StrStr
+    ; Add drivers to PATH - using direct manipulation
     DetailPrint "Adding WebDriver directories to PATH..."
     
     ; Read current PATH
@@ -218,16 +218,48 @@ Section "Uninstall"
     ; Display a message
     DetailPrint "Uninstalling Form-Master..."
     
-    ; Remove browser drivers from PATH (simplified)
+    ; Remove browser drivers from PATH (simplified approach that doesn't use ${un.StrReplace})
     DetailPrint "Removing WebDriver directories from PATH..."
     ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
     
-    ; Basic string replacement to remove our paths (avoids using StrStr in uninstaller)
-    ${un.StrReplace} $0 "$0" ";$INSTDIR\drivers\chromedriver" ""
-    ${un.StrReplace} $0 "$0" ";$INSTDIR\drivers\geckodriver" ""
+    ; Create a temporary variable to hold the new path
+    StrCpy $1 ""
     
-    ; Update PATH in registry
-    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" $0
+    ; Use direct string manipulation to remove our directories
+    ; Split PATH into segments by semicolon and rebuild without our directories
+    StrCpy $2 "$0;"  ; Add trailing semicolon to simplify parsing
+    StrCpy $3 ""     ; Current segment
+    StrLen $4 $2     ; Length of PATH
+    StrCpy $5 0      ; Position in string
+    
+    ; Loop through each character in PATH
+    loop:
+        StrCpy $6 $2 1 $5    ; Get character at position $5
+        
+        ${If} $6 == ";"      ; If we found a segment delimiter
+            ; Check if this segment is one of our driver paths
+            ${If} $3 != "$INSTDIR\drivers\chromedriver"
+            ${AndIf} $3 != "$INSTDIR\drivers\geckodriver"
+                ; If not, add it to the new path
+                ${If} $1 != ""
+                    StrCpy $1 "$1;$3"
+                ${Else}
+                    StrCpy $1 "$3"
+                ${EndIf}
+            ${EndIf}
+            
+            StrCpy $3 ""     ; Reset current segment
+        ${Else}
+            StrCpy $3 "$3$6"  ; Add character to current segment
+        ${EndIf}
+        
+        IntOp $5 $5 + 1      ; Move to next character
+        ${If} $5 < $4
+            Goto loop
+        ${EndIf}
+    
+    ; Update PATH registry with cleaned value
+    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" $1
     SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
     
     ; Uninstall Form-Master package
