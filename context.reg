@@ -1,26 +1,26 @@
 Windows Registry Editor Version 5.00
 
-[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplicationUSYD]
+[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney]
 @="悉尼大学"
 
-[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplicationUSYD\command]
+[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"--uni=usyd\" \"%V\""
 
-[HKEY_CLASSES_ROOT\Directory\shell\StudentApplicationUSYD]
+[HKEY_CLASSES_ROOT\Directory\shell\USydney]
 @="悉尼大学"
 
-[HKEY_CLASSES_ROOT\Directory\shell\StudentApplicationUSYD\command]
+[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"--uni=usyd\" \"%V\""
 
 
-[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplicationUNSW]
+[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]
 @="新南威尔士大学"
 
-[HKEY_CLASSES_ROOT\Directory\Background\shell\StudentApplicationUNSW\command]
+[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"--uni=unsw\" \"%V\""
 
-[HKEY_CLASSES_ROOT\Directory\shell\StudentApplicationUNSW]
+[HKEY_CLASSES_ROOT\Directory\shell\UNSW]
 @="新南威尔士大学"
 
-[HKEY_CLASSES_ROOT\Directory\shell\StudentApplicationUNSW\command]
+[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]
 @="\"C:\\Python\\python.exe\" \"C:\\form-master-main\\src\\formfiller.py\" \"--uni=unsw\" \"%V\""

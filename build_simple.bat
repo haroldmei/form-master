@@ -82,51 +82,29 @@ if not exist "context.reg.template" (
     (
         echo Windows Registry Editor Version 5.00
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]
-        echo @="Form-Master"
-        echo "Icon"="PYTHON_PATH"
-        echo "SubCommands"=""
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\USydney]
+        echo @="Sydney University"
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general]
-        echo @="General Form-Master"
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]
+        echo @="python -m formfiller --uni=usyd \"%%V\""
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general\command] 
-        echo @="\"PYTHON_PATH\" -m formfiller \"%%V\""
+        echo [HKEY_CLASSES_ROOT\Directory\shell\USydney]
+        echo @="Sydney University"
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd]
-        echo @="Sydney University Application"
+        echo [HKEY_CLASSES_ROOT\Directory\shell\USydney\command]
+        echo @="python -m formfiller --uni=usyd \"%%1\""
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd\command]
-        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%V\""
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]
+        echo @="New South Wales University"
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw]
-        echo @="New South Wales University Application"
+        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]
+        echo @="python -m formfiller --uni=unsw \"%%V\""
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw\command]
-        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%V\""
+        echo [HKEY_CLASSES_ROOT\Directory\shell\UNSW]
+        echo @="New South Wales University"
         echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster]
-        echo @="Process with Form-Master"
-        echo "Icon"="PYTHON_PATH"
-        echo "SubCommands"=""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general]
-        echo @="General Form-Master"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general\command]
-        echo @="\"PYTHON_PATH\" -m formfiller \"%%1\""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd]
-        echo @="Sydney University Application"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd\command]
-        echo @="\"PYTHON_PATH\" -m formfiller --uni=usyd \"%%1\""
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw]
-        echo @="New South Wales University Application"
-        echo.
-        echo [HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw\command]
-        echo @="\"PYTHON_PATH\" -m formfiller --uni=unsw \"%%1\""
+        echo [HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]
+        echo @="python -m formfiller --uni=unsw \"%%1\""
     ) > context.reg.template
 )
 

@@ -128,56 +128,81 @@ Section "Install"
     ; Create and update context menu registry entries
     DetailPrint "Setting up context menu integration with university-specific options..."
     
-    ; Create context.reg directly with proper Python path
+    ; Create context.reg directly with Python path
     DetailPrint "Creating registry entries for context menu..."
     FileOpen $0 "$INSTDIR\context.reg" w
     FileWrite $0 "Windows Registry Editor Version 5.00$\r$\n$\r$\n"
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster]$\r$\n"
-    FileWrite $0 '@="Form-Master"$\r$\n'
-    FileWrite $0 '"Icon"="$9"$\r$\n'
-    FileWrite $0 '"SubCommands"=""$\r$\n$\r$\n'
+    ; Get Python path - prefer system Python path if available
+    StrCpy $9 "C:\Python\python.exe"
+    ${If} ${FileExists} $9
+        DetailPrint "Using Python at $9"
+    ${Else}
+        DetailPrint "Python not found at default location, using system Python"
+        StrCpy $9 "python.exe"
+    ${EndIf}
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general]$\r$\n"
-    FileWrite $0 '@="General Form-Master"$\r$\n$\r$\n'
+    ; USydney entries
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney]$\r$\n"
+    FileWrite $0 '@="悉尼大学"$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\general\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]$\r$\n"
+    FileWrite $0 '@="\"$9\" \"$INSTDIR\src\formfiller.py\" \"--uni=usyd\" \"%V\""$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd]$\r$\n"
-    FileWrite $0 '@="Sydney University Application"$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney]$\r$\n"
+    FileWrite $0 '@="悉尼大学"$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\usyd\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller --uni=usyd \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]$\r$\n"
+    FileWrite $0 '@="\"$9\" \"$INSTDIR\src\formfiller.py\" \"--uni=usyd\" \"%1\""$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw]$\r$\n"
-    FileWrite $0 '@="New South Wales University Application"$\r$\n$\r$\n'
+    ; UNSW entries
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]$\r$\n"
+    FileWrite $0 '@="新南威尔士大学"$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\FormMaster\shell\unsw\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller --uni=unsw \"%V\""$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]$\r$\n"
+    FileWrite $0 '@="\"$9\" \"$INSTDIR\src\formfiller.py\" \"--uni=unsw\" \"%V\""$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster]$\r$\n"
-    FileWrite $0 '@="Process with Form-Master"$\r$\n'
-    FileWrite $0 '"Icon"="$9"$\r$\n'
-    FileWrite $0 '"SubCommands"=""$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW]$\r$\n"
+    FileWrite $0 '@="新南威尔士大学"$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general]$\r$\n"
-    FileWrite $0 '@="General Form-Master"$\r$\n$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]$\r$\n"
+    FileWrite $0 '@="\"$9\" \"$INSTDIR\src\formfiller.py\" \"--uni=unsw\" \"%1\""$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\general\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller \"%1\""$\r$\n$\r$\n'
+    FileClose $0
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd]$\r$\n"
-    FileWrite $0 '@="Sydney University Application"$\r$\n$\r$\n'
+    ; Create and update context menu registry entries
+    DetailPrint "Setting up context menu integration with university-specific options..."
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\usyd\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller --uni=usyd \"%1\""$\r$\n$\r$\n'
+    ; Create context.reg directly with Python from PATH
+    DetailPrint "Creating registry entries for context menu..."
+    FileOpen $0 "$INSTDIR\context.reg" w
+    FileWrite $0 "Windows Registry Editor Version 5.00$\r$\n$\r$\n"
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw]$\r$\n"
-    FileWrite $0 '@="New South Wales University Application"$\r$\n$\r$\n'
+    ; USydney entries
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney]$\r$\n"
+    FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
     
-    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\FormMaster\shell\unsw\command]$\r$\n"
-    FileWrite $0 '@="\"$9\" -m formfiller --uni=unsw \"%1\""$\r$\n'
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\USydney\command]$\r$\n"
+    FileWrite $0 '@="python -m formfiller --uni=usyd \"%V\""$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney]$\r$\n"
+    FileWrite $0 '@="Sydney University"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\USydney\command]$\r$\n"
+    FileWrite $0 '@="python -m formfiller --uni=usyd \"%1\""$\r$\n$\r$\n'
+    
+    ; UNSW entries
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW]$\r$\n"
+    FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\Background\shell\UNSW\command]$\r$\n"
+    FileWrite $0 '@="python -m formfiller --uni=unsw \"%V\""$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW]$\r$\n"
+    FileWrite $0 '@="New South Wales University"$\r$\n$\r$\n'
+    
+    FileWrite $0 "[HKEY_CLASSES_ROOT\Directory\shell\UNSW\command]$\r$\n"
+    FileWrite $0 '@="python -m formfiller --uni=unsw \"%1\""$\r$\n'
     
     FileClose $0
     
@@ -206,6 +231,10 @@ Section "Uninstall"
     DetailPrint "Removing context menu integration..."
     DeleteRegKey HKCR "Directory\Background\shell\FormMaster"
     DeleteRegKey HKCR "Directory\shell\FormMaster"
+    DeleteRegKey HKCR "Directory\Background\shell\USydney"
+    DeleteRegKey HKCR "Directory\shell\USydney"
+    DeleteRegKey HKCR "Directory\Background\shell\UNSW"
+    DeleteRegKey HKCR "Directory\shell\UNSW"
     
     ; Uninstall package
     ExecWait 'python -m pip uninstall -y form-master'
