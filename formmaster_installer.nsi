@@ -42,22 +42,11 @@ Section "Install"
         DetailPrint "Python 3.11 is already installed."
     ${Else}
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
-        
-        ; Download Python if not included
-        ${If} ${FileExists} "build\${PYTHON_INSTALLER}"
-            DetailPrint "Using bundled Python installer."
-            File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
-        ${Else}
-            DetailPrint "Downloading Python ${PYTHON_VERSION}..."
-            NSISdl::download "https://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_INSTALLER}" "$TEMP\${PYTHON_INSTALLER}"
-            Pop $R0
-            ${If} $R0 != "success"
-                MessageBox MB_OK|MB_ICONEXCLAMATION "Failed to download Python. Please install Python 3.11 manually."
-                Abort
-            ${EndIf}
-        ${EndIf}
+        ; Include Python installer in the package
+        File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
         
         ; Install Python
+        DetailPrint "Running Python installer..."
         ExecWait '"$TEMP\${PYTHON_INSTALLER}" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0' $0
         Delete "$TEMP\${PYTHON_INSTALLER}"
         
@@ -72,38 +61,44 @@ Section "Install"
     File "LICENSE"
     File "README.md"
     
+    ; Create packages directory and copy Python package files
+    CreateDirectory "$INSTDIR\packages"
+    SetOutPath "$INSTDIR\packages"
+    File /r "build\packages\*.*"
+    
     ; Create drivers directory and copy drivers
     CreateDirectory "$INSTDIR\drivers"
     SetOutPath "$INSTDIR\drivers"
     File /r "src\drivers\*.*"
     
-    ; Install formmaster pip package
-    DetailPrint "Installing Form-Master package..."
+    ; Install formmaster from local packages
+    DetailPrint "Installing Form-Master package from local files..."
+    SetOutPath "$INSTDIR"
     
-    ; First try with the pypi package
-    nsExec::ExecToStack 'python -m pip install formmaster'
+    ; First install pip, setuptools and wheel from local files
+    DetailPrint "Installing base packages..."
+    nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" pip setuptools wheel'
     Pop $0
     Pop $1
+    DetailPrint "Base package install output: $1"
     
-    ${If} $0 != 0
-        DetailPrint "Failed to install from PyPI. Trying local install..."
-        
-        ; If PyPI install fails, try with a local wheel if available
-        ${If} ${FileExists} "dist\formmaster-*.whl"
-            FindFirst $2 $3 "dist\formmaster-*.whl"
-            ${If} $2 != ""
-                DetailPrint "Found local wheel: $3"
-                nsExec::ExecToStack 'python -m pip install "$3"'
-                FindClose $2
-            ${Else}
-                FindClose $2
-                DetailPrint "No wheel found. Building from source..."
-                nsExec::ExecToStack 'python -m pip install -e .'
-            ${EndIf}
-        ${Else}
-            DetailPrint "No wheel found. Building from source..."
-            nsExec::ExecToStack 'python -m pip install -e .'
-        ${EndIf}
+    ; Install all required packages from local files
+    DetailPrint "Installing required packages from local files..."
+    nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "src\requirements.txt"'
+    Pop $0
+    Pop $1
+    DetailPrint "Requirements install output: $1"
+    
+    ; Install formmaster from local wheel or source
+    FindFirst $2 $3 "$INSTDIR\packages\formmaster-*.whl"
+    ${If} $2 != ""
+        DetailPrint "Installing formmaster from local wheel: $3"
+        nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" "$3"'
+        FindClose $2
+    ${Else}
+        FindClose $2
+        DetailPrint "No wheel found. Installing from source..."
+        nsExec::ExecToStack 'python -m pip install --no-index --find-links="$INSTDIR\packages" -e .'
     ${EndIf}
     
     ; Configure environment for drivers
@@ -188,6 +183,7 @@ Section "Uninstall"
     Delete "$INSTDIR\README.md"
     Delete "$INSTDIR\context.reg"
     RMDir /r "$INSTDIR\drivers"
+    RMDir /r "$INSTDIR\packages"
     
     ; Remove start menu shortcuts
     Delete "$SMPROGRAMS\Form-Master\Form-Master.lnk"
