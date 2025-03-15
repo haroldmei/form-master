@@ -109,38 +109,55 @@ Section "Install"
         FindClose $1
         ${If} $0 != 0
             DetailPrint "Warning: Failed to install pynput directly. Trying with dependencies..."
-            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput==1.7.6' $0
-            ${If} $0 != 0
-                DetailPrint "CRITICAL: Failed to install pynput from local packages."
-                MessageBox MB_YESNO|MB_ICONQUESTION "Failed to install pynput from local packages. Would you like to install it from the internet?" IDYES install_online IDNO skip_online
-                install_online:
-                    DetailPrint "Installing pynput from internet..."
-                    ExecWait 'python -m pip install pynput==1.7.6' $0
-                skip_online:
-            ${EndIf}
+            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput' $0
         ${EndIf}
     ${Else}
         FindClose $1
         DetailPrint "Pynput package not found by name, trying by version..."
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput==1.7.6' $0
-        ${If} $0 != 0
-            MessageBox MB_YESNO|MB_ICONQUESTION "Failed to install pynput from local packages. Would you like to install it from the internet?" IDYES install_online2 IDNO skip_online2
-            install_online2:
-                DetailPrint "Installing pynput from internet..."
-                ExecWait 'python -m pip install pynput==1.7.6' $0
-            skip_online2:
-        ${EndIf}
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput' $0
     ${EndIf}
     
-    ; Verify pynput installed correctly
+    ; Install pynput dependencies explicitly
+    DetailPrint "Installing pynput dependencies explicitly..."
+    FindFirst $1 $2 "$INSTDIR\packages\six*.whl"
+    ${If} $1 != ""
+        DetailPrint "Installing six..."
+        ExecWait 'python -m pip install --no-index --no-deps "$INSTDIR\packages\$2"' $0
+        FindClose $1
+    ${EndIf}
+    
+    FindFirst $1 $2 "$INSTDIR\packages\pywin*.whl"
+    ${If} $1 != ""
+        DetailPrint "Installing pywin32..."
+        ExecWait 'python -m pip install --no-index --no-deps "$INSTDIR\packages\$2"' $0
+        FindClose $1
+    ${EndIf}
+    
+    ; Verify pynput installed correctly - removing __version__ attribute references
     DetailPrint "Verifying pynput installation..."
-    nsExec::ExecToStack 'python -c "import pynput; print("Pynput version: " + pynput.__version__)"'
+    nsExec::ExecToStack 'python -c "import pynput; print(\"Pynput successfully imported\")"'
     Pop $0
     Pop $1
     DetailPrint "Pynput check result: $0"
-    DetailPrint "Pynput version info: $1"
+    DetailPrint "Pynput check output: $1"
+    
     ${If} $0 != 0
-        MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Pynput installation could not be verified. Form-Master may not function correctly with keyboard/mouse automation features."
+        DetailPrint "WARNING: pynput could not be verified. Trying alternative installation..."
+        MessageBox MB_YESNO|MB_ICONQUESTION "pynput could not be verified. This might affect keyboard/mouse automation. Would you like to try installing it from the internet?" IDYES online_pynput IDNO skip_pynput
+        
+        online_pynput:
+            DetailPrint "Installing pynput directly from PyPI..."
+            ExecWait 'python -m pip install pynput' $0
+            nsExec::ExecToStack 'python -c "import pynput; print(\"Online pynput installation successful\")"'
+            Pop $0
+            Pop $1
+            DetailPrint "Online pynput check: $1"
+            ${If} $0 != 0
+                MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: pynput installation could not be verified even from online source. Keyboard/mouse automation features may not work."
+            ${EndIf}
+        
+        skip_pynput:
+            DetailPrint "Continuing with installation without verified pynput."
     ${EndIf}
     
     ; Install all other dependencies from local packages
