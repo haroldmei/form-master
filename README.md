@@ -16,7 +16,7 @@ FormMaster is an automation tool designed to streamline the university applicati
 You can install FormMaster directly from PyPI:
 
 ```bash
-pip install form-master
+pip install formmaster
 ```
 
 Or install from source:
@@ -34,7 +34,7 @@ After installation, you can run FormMaster in two ways:
 ### Command Line
 
 ```bash
-form-master --path /path/to/student/documents --portal usyd
+python -m formfiller --path /path/to/student/documents --portal usyd
 ```
 
 ### As Python Module
