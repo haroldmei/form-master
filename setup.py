@@ -25,7 +25,7 @@ setup(
     ],
     py_modules=["formfiller"],  # Use individual modules instead of packages
     package_dir={"": "src"},    # Source directory where modules can be found
-    python_requires=">=3.8",
+    python_requires="~=3.9.0",  # Specifically require Python 3.9.x
     install_requires=requirements,
     entry_points={
         "console_scripts": [

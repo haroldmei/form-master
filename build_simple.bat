@@ -36,7 +36,7 @@ if not exist build\drivers\geckodriver mkdir build\drivers\geckodriver
 
 rem Download Python installer
 echo Downloading Python installer...
-set PYTHON_VERSION=3.8.10
+set PYTHON_VERSION=3.9.13
 set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
 set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/%PYTHON_INSTALLER%
 
@@ -71,12 +71,16 @@ rem Special handling for critical packages - ensure they're properly downloaded
 echo Ensuring critical packages are downloaded...
 python -m pip download selenium==4.10.0 -d build\packages --only-binary=:all:
 python -m pip download pynput==1.7.6 -d build\packages --only-binary=:all:
-python -m pip download pandas==1.5.3 -d build\packages --only-binary=:all:
+python -m pip download pandas==1.4.4 -d build\packages --only-binary=:all:
 python -m pip download python-docx==0.8.11 -d build\packages --only-binary=:all:
 
-rem Extra focus on pynput dependencies for Python 3.8
-echo Downloading pynput and dependencies specifically for Python 3.8...
-python -m pip download --only-binary=:all: --python-version 3.8 --platform win_amd64 pynput -d build\packages
+rem Force pandas 1.4.x download
+echo Ensuring pandas 1.4.x is downloaded...
+python -m pip download "pandas>=1.4.0,<1.5.0" -d build\packages --only-binary=:all:
+
+rem Extra focus on pynput dependencies for Python 3.9
+echo Downloading pynput and dependencies specifically for Python 3.9...
+python -m pip download --only-binary=:all: --python-version 3.9 --platform win_amd64 pynput -d build\packages
 python -m pip download --only-binary=:all: six pywin32 -d build\packages
 
 rem Alternative method to ensure pynput is properly downloaded
