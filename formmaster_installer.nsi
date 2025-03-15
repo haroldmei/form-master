@@ -68,6 +68,27 @@ FunctionEnd
 Section "Install"
     SetOutPath "$TEMP"
     
+    ; Check if Google Chrome is installed
+    DetailPrint "Checking for Google Chrome installation..."
+    ReadRegStr $0 HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe" ""
+    ReadRegStr $1 HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe" ""
+    
+    ${If} $0 == ""
+    ${AndIf} $1 == ""
+        DetailPrint "Google Chrome not found. Installing Chrome..."
+        SetOutPath "$TEMP"
+        File /oname=$TEMP\ChromeSetup.exe "build\ChromeSetup.exe"
+        DetailPrint "Running Chrome installer..."
+        ExecWait '"$TEMP\ChromeSetup.exe" /silent /install' $0
+        Delete "$TEMP\ChromeSetup.exe"
+        
+        ${If} $0 != 0
+            MessageBox MB_ICONEXCLAMATION|MB_OK "Chrome installation may not have completed successfully. FormMaster requires Chrome to operate correctly."
+        ${EndIf}
+    ${Else}
+        DetailPrint "Google Chrome is already installed."
+    ${EndIf}
+    
     ; Check if Python is installed
     DetailPrint "Checking for Python installation..."
     ReadRegStr $0 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
@@ -153,7 +174,7 @@ Section "Install"
     ; Create the .formmaster directory in user profile
     CreateDirectory "$1\.formmaster"
     SetOutPath "$1\.formmaster"
-    File /r "src\drivers\*.*"
+    File /r "build\drivers\*.*"
     
     ; Install formmaster from local packages
     DetailPrint "Installing FormMaster package from local files..."
