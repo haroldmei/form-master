@@ -41,7 +41,7 @@ def setup_logging():
     timestamp = datetime.now().strftime("%y_%m_%d_%H_%M_%S")
     log_filename = f"formmaster_{timestamp}.log"
     log_filename = os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', log_filename)
-    
+
     # Configure logging with encoding specified for file handler
     # Set up root logger
     root_logger = logging.getLogger()
@@ -124,38 +124,14 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         
         chrome_options = Options()
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-        
-        try:
-            # First try to use an existing Chrome instance via the remote debugging port
-            driver = webdriver.Chrome(options=chrome_options)
-        except Exception as e:
-            logger.error(f"Failed to connect to existing Chrome instance: {e}")
-            try:
-                # If that fails, try to use webdriver_manager to get ChromeDriver
-                logger.info("Trying to install ChromeDriver using webdriver_manager...")
-                service = Service(ChromeDriverManager().install())
-                driver = webdriver.Chrome(service=service, options=chrome_options)
-            except Exception as e2:
-                # If that fails too, check for locally installed driver in common locations
-                logger.error(f"Failed to install ChromeDriver automatically: {e2}")
-                # Check installation directory and drivers folder
-                local_driver_paths = [
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'drivers', 'chromedriver', 'chromedriver.exe'),
-                    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drivers', 'chromedriver.exe'),
-                    os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', 'chromedriver.exe'),
-                    "C:\\drivers\\chromedriver.exe",
-                ]
-                
-                for path in local_driver_paths:
-                    if os.path.exists(path):
-                        logger.info(f"Using local ChromeDriver at {path}")
-                        service = Service(executable_path=path)
-                        driver = webdriver.Chrome(service=service, options=chrome_options)
-                        break
-                else:
-                    # If all else fails, raise a clear error
-                    logger.critical("Could not find or install ChromeDriver. Please install it manually and ensure it is in your PATH.")
-                    raise RuntimeError("Could not find or install ChromeDriver. Please install it manually and ensure it is in your PATH.")
+        path = os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', 'chromedriver.exe')
+        if os.path.exists(path):
+            logger.info(f"Using local ChromeDriver at {path}")
+            service = Service(executable_path=path)
+            driver = webdriver.Chrome(service=service, options=chrome_options)
+        else:
+            logger.info("Using ChromeDriverManager")
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     else:
         options = FirefoxOptions()
         options.set_preference("network.protocol-handler.external-default", False)
