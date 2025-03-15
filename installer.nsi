@@ -5,7 +5,6 @@ Unicode true
 !define DESCRIPTION "Form automation tool for Australian university applications"
 !define VERSION "0.1.0"
 !define PYTHON_VERSION "3.11.1"
-!define PYTHON_URL "https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-amd64.exe"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
@@ -20,6 +19,12 @@ RequestExecutionLevel admin
 !include "nsDialogs.nsh"
 !include "FileFunc.nsh"
 !include "WinMessages.nsh"
+
+; Include string functions
+!include "StrFunc.nsh"
+; Initialize both installer and uninstaller string functions
+${StrStr}
+${UnStrStr}
 
 ; Modern UI settings
 !define MUI_ABORTWARNING
@@ -65,26 +70,10 @@ Section "Python ${PYTHON_VERSION} (Required)" SectionPython
     ${OrIf} $1 != ""
         DetailPrint "Python 3.11 is already installed."
     ${Else}
-        DetailPrint "Downloading Python ${PYTHON_VERSION}..."
+        DetailPrint "Setting up Python ${PYTHON_VERSION}..."
         
-        ; Use NSISdl as fallback if inetc isn't available
-        !if ${NSIS_PACKEDVERSION} >= 0x03000000
-            NSISdl::download "${PYTHON_URL}" "$TEMP\${PYTHON_INSTALLER}"
-            Pop $0
-            ${If} $0 != "success"
-                DetailPrint "Python download failed: $0"
-                MessageBox MB_ICONEXCLAMATION|MB_OK "Failed to download Python. Please check your internet connection and try again."
-                Abort "Failed to download Python."
-            ${EndIf}
-        !else
-            NSISdl::download "${PYTHON_URL}" "$TEMP\${PYTHON_INSTALLER}"
-            Pop $0
-            ${If} $0 != "success"
-                DetailPrint "Python download failed: $0"
-                MessageBox MB_ICONEXCLAMATION|MB_OK "Failed to download Python. Please check your internet connection and try again."
-                Abort "Failed to download Python."
-            ${EndIf}
-        !endif
+        ; Copy Python installer from our build directory
+        File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
         
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
         ExecWait '"$TEMP\${PYTHON_INSTALLER}" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0' $0
@@ -113,20 +102,42 @@ Section "Form-Master (Required)" SectionFormMaster
     CreateDirectory "$INSTDIR\src"
     CreateDirectory "$INSTDIR\src\formmaster"
     CreateDirectory "$INSTDIR\src\formmaster\forms"
+    CreateDirectory "$INSTDIR\packages"
     
     ; Copy project files
     File "README.md"
     File "setup.py"
     File /r "src\*.*"
     
-    ; Install Form-Master and its dependencies
+    ; Copy packaged dependencies
+    SetOutPath "$INSTDIR\packages"
+    File /r "build\packages\*.*"
+    
+    ; Install Form-Master and its dependencies from local packages
     DetailPrint "Installing Form-Master and dependencies..."
-    DetailPrint "Upgrading pip..."
-    ExecWait 'python -m pip install --upgrade pip'
-    DetailPrint "Installing dependencies..."
-    ExecWait 'python -m pip install -r "$INSTDIR\src\requirements.txt"'
+    DetailPrint "Upgrading pip from local package..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" --upgrade pip' $0
+    ${If} $0 != 0
+        DetailPrint "Warning: pip upgrade failed with code $0 (continuing anyway)"
+    ${EndIf}
+    
+    DetailPrint "Installing wheel from local package..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" wheel setuptools' $0
+    ${If} $0 != 0
+        DetailPrint "Warning: wheel/setuptools installation failed with code $0 (continuing anyway)"
+    ${EndIf}
+    
+    DetailPrint "Installing dependencies from local packages..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt"' $0
+    ${If} $0 != 0
+        MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Failed to install some dependencies. Form-Master may not function correctly."
+    ${EndIf}
+    
     DetailPrint "Installing Form-Master..."
-    ExecWait 'python -m pip install -e "$INSTDIR"'
+    ExecWait 'python -m pip install -e "$INSTDIR"' $0
+    ${If} $0 != 0
+        MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Failed to install Form-Master. The application may not work properly."
+    ${EndIf}
     
     ; Create shortcuts
     CreateDirectory "$SMPROGRAMS\Form-Master"
@@ -146,16 +157,48 @@ Section "Form-Master (Required)" SectionFormMaster
 SectionEnd
 
 Section "Browser Drivers (Recommended)" SectionDrivers
-    SetOutPath "$INSTDIR\drivers"
+    CreateDirectory "$INSTDIR\drivers\chromedriver"
+    CreateDirectory "$INSTDIR\drivers\geckodriver"
     
-    DetailPrint "Installing WebDriver Manager..."
-    ExecWait 'python -m pip install webdriver-manager'
+    ; Copy Chrome WebDriver from our build directory
+    SetOutPath "$INSTDIR\drivers\chromedriver"
+    File "build\drivers\chromedriver\chromedriver.exe"
     
-    DetailPrint "Installing WebDriver for Chrome..."
-    ExecWait 'python -c "from webdriver_manager.chrome import ChromeDriverManager; ChromeDriverManager().install()"'
+    ; Copy Firefox WebDriver from our build directory
+    SetOutPath "$INSTDIR\drivers\geckodriver"
+    File "build\drivers\geckodriver\geckodriver.exe"
     
-    DetailPrint "Installing WebDriver for Firefox..."
-    ExecWait 'python -c "from webdriver_manager.firefox import GeckoDriverManager; GeckoDriverManager().install()"'
+    ; Add drivers to PATH - simplified version without using StrStr
+    DetailPrint "Adding WebDriver directories to PATH..."
+    
+    ; Read current PATH
+    ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    
+    ; Simply add the paths (we'll handle duplicates at uninstall time)
+    StrCpy $0 "$0;$INSTDIR\drivers\chromedriver;$INSTDIR\drivers\geckodriver"
+    
+    ; Write updated PATH back to registry
+    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" $0
+    
+    ; Notify applications of the change
+    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+    
+    ; Install WebDriver Manager for possible future updates
+    DetailPrint "Installing WebDriver Manager from local package..."
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" webdriver-manager'
+    
+    ; Configure the system to use the bundled drivers
+    DetailPrint "Configuring system to use bundled WebDrivers..."
+    SetOutPath "$INSTDIR\config"
+    FileOpen $0 "webdriver_config.py" w
+    FileWrite $0 'import os$\r$\n'
+    FileWrite $0 'os.environ["CHROME_DRIVER_PATH"] = r"$INSTDIR\drivers\chromedriver\chromedriver.exe"$\r$\n'
+    FileWrite $0 'os.environ["GECKO_DRIVER_PATH"] = r"$INSTDIR\drivers\geckodriver\geckodriver.exe"$\r$\n'
+    FileWrite $0 'os.environ["WDM_LOCAL"] = "1"$\r$\n'
+    FileClose $0
+    
+    ; Create .pth file to auto-import our config
+    ExecWait 'python -c "import site; open(site.getsitepackages()[0] + \"\\\formmaster_webdriver.pth\", \"w\").write(\"$INSTDIR\\config\")"'
 SectionEnd
 
 Section "Create Desktop Shortcut" SectionDesktopShortcut
@@ -175,6 +218,18 @@ Section "Uninstall"
     ; Display a message
     DetailPrint "Uninstalling Form-Master..."
     
+    ; Remove browser drivers from PATH (simplified)
+    DetailPrint "Removing WebDriver directories from PATH..."
+    ReadRegStr $0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    
+    ; Basic string replacement to remove our paths (avoids using StrStr in uninstaller)
+    ${un.StrReplace} $0 "$0" ";$INSTDIR\drivers\chromedriver" ""
+    ${un.StrReplace} $0 "$0" ";$INSTDIR\drivers\geckodriver" ""
+    
+    ; Update PATH in registry
+    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" $0
+    SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+    
     ; Uninstall Form-Master package
     DetailPrint "Removing Python package..."
     ExecWait 'python -m pip uninstall -y form-master'
@@ -182,6 +237,9 @@ Section "Uninstall"
     ; Remove directories and files
     DetailPrint "Removing installed files..."
     RMDir /r "$INSTDIR\src"
+    RMDir /r "$INSTDIR\packages"
+    RMDir /r "$INSTDIR\drivers"
+    RMDir /r "$INSTDIR\config"
     Delete "$INSTDIR\setup.py"
     Delete "$INSTDIR\README.md"
     Delete "$INSTDIR\uninstall.exe"
@@ -219,5 +277,9 @@ Function .onInit
     
     done:
 FunctionEnd
+
+; Initialize uninstaller string functions
+!insertmacro StrReplace
+${UnStrReplace}
 
 ; EOF
