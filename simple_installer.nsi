@@ -7,7 +7,7 @@ Unicode true
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
-OutFile "Form-Master-Setup.exe"
+OutFile "build\Form-Master-Setup.exe"
 InstallDir "$PROGRAMFILES64\Form-Master"
 RequestExecutionLevel admin
 

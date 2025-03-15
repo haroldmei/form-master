@@ -132,10 +132,16 @@ echo Building installer...
 %NSIS_PATH% simple_installer.nsi
 
 echo Done!
-if exist Form-Master-Setup.exe (
-    echo Installer created: Form-Master-Setup.exe
+if exist build\Form-Master-Setup.exe (
+    echo Installer created: build\Form-Master-Setup.exe
 ) else (
     echo Error: Installer not created.
+)
+
+rem Optional: Copy to root directory for convenience
+copy build\Form-Master-Setup.exe Form-Master-Setup.exe >nul 2>nul
+if %ERRORLEVEL% == 0 (
+    echo Installer also copied to: Form-Master-Setup.exe
 )
 
 pause
