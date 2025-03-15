@@ -3,8 +3,9 @@ Unicode true
 
 !define APPNAME "Form-Master"
 !define VERSION "0.1.0"
-!define PYTHON_VERSION "3.9.13"
+!define PYTHON_VERSION "3.11.1"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
+!define LOGFILE "$EXEDIR\Form-Master-Install.log"
 
 Name "${APPNAME} ${VERSION}"
 OutFile "build\Form-Master-Setup.exe"
@@ -13,6 +14,7 @@ RequestExecutionLevel admin
 
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
+!include "FileFunc.nsh"
 
 ; Modern UI settings
 !define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
@@ -29,26 +31,64 @@ RequestExecutionLevel admin
 !insertmacro MUI_UNPAGE_INSTFILES
 !insertmacro MUI_LANGUAGE "English"
 
+; Function to write to log file
+Function WriteToLog
+    Exch $0 ; Message to log
+    Push $1 ; File handle
+    Push $2 ; Timestamp
+    
+    ; Get current time
+    ${GetTime} "" "L" $2 $3 $4 $5 $6 $7 $8
+    StrCpy $2 "[$2-$3-$4 $5:$6:$7]"
+    
+    ; Open log file for append
+    FileOpen $1 ${LOGFILE} a
+    FileSeek $1 0 END
+    FileWrite $1 "$2 $0$\r$\n"
+    FileClose $1
+    
+    Pop $2
+    Pop $1
+    Pop $0
+FunctionEnd
+
+!macro LogMsg msg
+    Push "${msg}"
+    Call WriteToLog
+!macroend
+
 Section "Install"
+    ; Start installation log
+    Delete ${LOGFILE} ; Start with a fresh log
+    !insertmacro LogMsg "Starting Form-Master Installation v${VERSION}"
+    !insertmacro LogMsg "Running as administrator: $ADMINISTRATOR"
+    !insertmacro LogMsg "Install directory: $INSTDIR"
+    !insertmacro LogMsg "Temp directory: $TEMP"
+    
     SetOutPath "$TEMP"
     
     ; Check if Python is installed
     DetailPrint "Checking for Python installation..."
-    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
-    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
+    !insertmacro LogMsg "Checking for Python ${PYTHON_VERSION} installation"
+    ReadRegStr $0 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
+    ReadRegStr $1 HKCU "Software\Python\PythonCore\3.11\InstallPath" ""
     
     ${If} $0 != ""
     ${OrIf} $1 != ""
-        DetailPrint "Python 3.9 is already installed."
+        DetailPrint "Python 3.11 is already installed."
+        !insertmacro LogMsg "Python 3.11 is already installed at: $0$1"
     ${Else}
         DetailPrint "Installing Python ${PYTHON_VERSION}..."
+        !insertmacro LogMsg "Installing Python ${PYTHON_VERSION} from build\${PYTHON_INSTALLER}"
         File /oname=$TEMP\${PYTHON_INSTALLER} "build\${PYTHON_INSTALLER}"
-        ExecWait '"$TEMP\${PYTHON_INSTALLER}" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0'
+        ExecWait '"$TEMP\${PYTHON_INSTALLER}" /quiet InstallAllUsers=1 PrependPath=1 Include_test=0' $0
+        !insertmacro LogMsg "Python installer exit code: $0"
         Delete "$TEMP\${PYTHON_INSTALLER}"
     ${EndIf}
     
     ; Install Form-Master
     SetOutPath "$INSTDIR"
+    !insertmacro LogMsg "Copying Form-Master files to $INSTDIR"
     File "README.md"
     File "setup.py"
     File /r "src\*.*"
@@ -87,12 +127,12 @@ Section "Install"
         FindClose $1
         ${If} $0 != 0
             DetailPrint "Warning: Failed to install Selenium directly. Trying with dependencies..."
-            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.10.0' $0
+            ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.1.0' $0
         ${EndIf}
     ${Else}
         FindClose $1
         DetailPrint "Selenium package not found by name, trying by version..."
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.10.0' $0
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.1.0' $0
     ${EndIf}
     
     ${If} $0 != 0
@@ -162,24 +202,40 @@ Section "Install"
     
     ; Install all other dependencies from local packages
     DetailPrint "Installing all dependencies from local packages..."
-    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt"' $0
+    !insertmacro LogMsg "Installing all dependencies from requirements.txt"
+    ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" -r "$INSTDIR\src\requirements.txt" > "$INSTDIR\pip_install.log" 2>&1' $0
     ${If} $0 != 0
         DetailPrint "Warning: Failed to install all dependencies at once. Trying individual installations..."
+        !insertmacro LogMsg "Failed to install all dependencies. Attempting individual installations (Exit code: $0)"
         
         ; Try individual installations of critical packages
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pandas' $0
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput' $0
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" python-docx' $0
-        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" webdriver-manager' $0
+        !insertmacro LogMsg "Installing numpy==1.24.3"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" numpy==1.24.3 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing pandas==2.0.3"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pandas==2.0.3 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing pynput==1.8.0"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pynput==1.8.0 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing selenium==4.10.0"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" selenium==4.10.0 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing python-docx==1.1.2"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" python-docx==1.1.2 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing pytz==2023.3"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" pytz==2023.3 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing python-dateutil==2.8.2"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" python-dateutil==2.8.2 >> "$INSTDIR\pip_install.log" 2>&1' $0
+        !insertmacro LogMsg "Installing webdriver-manager"
+        ExecWait 'python -m pip install --no-index --find-links="$INSTDIR\packages" webdriver-manager >> "$INSTDIR\pip_install.log" 2>&1' $0
         
         DetailPrint "Individual installations completed. Checking critical imports..."
-        nsExec::ExecToStack 'python -c "import pandas, selenium, pynput; print(\"Imports successful\")"'
+        nsExec::ExecToStack 'python -c "import numpy, pandas, selenium, pynput, pytz, dateutil; print(\"Imports successful\")"'
         Pop $0
         Pop $1
         DetailPrint "Import test result: $0"
         DetailPrint "Import test output: $1"
+        !insertmacro LogMsg "Import test result: $0 - $1"
         
         ${If} $0 != 0
+            !insertmacro LogMsg "ERROR: Not all dependencies could be installed successfully"
             MessageBox MB_ICONEXCLAMATION|MB_OK "Warning: Not all dependencies could be installed from local packages. Form-Master may not function correctly."
         ${EndIf}
     ${EndIf}
@@ -208,11 +264,11 @@ Section "Install"
     StrCpy $9 "" ; Variable to store Python path
     
     ; Try to get Python path from registry
-    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.9\InstallPath" ""
+    ReadRegStr $9 HKLM "Software\Python\PythonCore\3.11\InstallPath" ""
     ${If} $9 != ""
         StrCpy $9 "$9python.exe"
     ${Else}
-        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.9\InstallPath" ""
+        ReadRegStr $9 HKCU "Software\Python\PythonCore\3.11\InstallPath" ""
         ${If} $9 != ""
             StrCpy $9 "$9python.exe"
         ${EndIf}
@@ -352,6 +408,11 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "DisplayName" "Form-Master"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "UninstallString" '"$INSTDIR\uninstall.exe"'
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Form-Master" "DisplayVersion" "${VERSION}"
+    
+    !insertmacro LogMsg "Form-Master installation completed"
+    
+    ; Copy install log to installation directory
+    CopyFiles ${LOGFILE} "$INSTDIR\install.log"
 SectionEnd
 
 Section "Uninstall"

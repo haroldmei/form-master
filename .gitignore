@@ -2,5 +2,6 @@
 geckodriver.log
 __pycache__
 build
+drivers
 dist
 Form-Master-Setup.exe

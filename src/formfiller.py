@@ -1,5 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -87,8 +89,36 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
         
         chrome_options = Options()
         chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9222")
-        driver = webdriver.Chrome(chrome_options=chrome_options)
-        #driver = webdriver.Chrome()
+        
+        try:
+            # First try to use an existing Chrome instance via the remote debugging port
+            driver = webdriver.Chrome(options=chrome_options)
+        except Exception as e:
+            print(f"Failed to connect to existing Chrome instance: {e}")
+            try:
+                # If that fails, try to use webdriver_manager to get ChromeDriver
+                print("Trying to install ChromeDriver using webdriver_manager...")
+                service = Service(ChromeDriverManager().install())
+                driver = webdriver.Chrome(service=service, options=chrome_options)
+            except Exception as e2:
+                # If that fails too, check for locally installed driver in common locations
+                print(f"Failed to install ChromeDriver automatically: {e2}")
+                # Check installation directory and drivers folder
+                local_driver_paths = [
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'drivers', 'chromedriver', 'chromedriver.exe'),
+                    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drivers', 'chromedriver.exe'),
+                    "C:\\drivers\\chromedriver.exe"
+                ]
+                
+                for path in local_driver_paths:
+                    if os.path.exists(path):
+                        print(f"Using local ChromeDriver at {path}")
+                        service = Service(executable_path=path)
+                        driver = webdriver.Chrome(service=service, options=chrome_options)
+                        break
+                else:
+                    # If all else fails, raise a clear error
+                    raise RuntimeError("Could not find or install ChromeDriver. Please install it manually and ensure it is in your PATH.")
     else:
         options = FirefoxOptions()
         options.set_preference("network.protocol-handler.external-default", False)

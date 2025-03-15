@@ -1,6 +1,11 @@
 @echo off
 echo Building Form-Master installer (simple version)...
 
+rem Create logs directory
+if not exist build mkdir build
+if not exist build\logs mkdir build\logs
+echo Building Form-Master installer - Started %date% %time% > build\logs\build.log
+
 rem Find NSIS
 set NSIS_PATH="C:\Program Files (x86)\NSIS\makensis.exe"
 if not exist %NSIS_PATH% (
@@ -8,7 +13,7 @@ if not exist %NSIS_PATH% (
 )
 
 if not exist %NSIS_PATH% (
-    echo ERROR: NSIS not found. Please install NSIS first.
+    echo ERROR: NSIS not found. Please install NSIS first. | tee -a build\logs\build.log
     echo Download from: https://nsis.sourceforge.io/Download
     exit /b 1
 )
@@ -19,13 +24,21 @@ for /f "tokens=*" %%a in ('echo %NSIS_PATH%') do (
 )
 set NSIS_DIR=%NSIS_FULL:"=%
 set NSIS_DIR=%NSIS_DIR:makensis.exe=%
+echo Using NSIS from: %NSIS_DIR% >> build\logs\build.log
 
 rem Check if Python is installed
-python --version >nul 2>nul
+python --version 2>> build\logs\build.log
 if %ERRORLEVEL% neq 0 (
+    echo Python not found. Python is required to download dependencies. >> build\logs\build.log
     echo Python not found. Python is required to download dependencies.
     exit /b 1
 )
+
+rem Log Python and pip versions
+echo Python environment: >> build\logs\build.log
+python --version >> build\logs\build.log 2>&1
+pip --version >> build\logs\build.log 2>&1
+echo System: %OS% >> build\logs\build.log
 
 rem Create build directory structure
 if not exist build mkdir build
@@ -36,12 +49,13 @@ if not exist build\drivers\geckodriver mkdir build\drivers\geckodriver
 
 rem Download Python installer
 echo Downloading Python installer...
-set PYTHON_VERSION=3.9.13
+echo Downloading Python installer %PYTHON_VERSION% >> build\logs\build.log
+set PYTHON_VERSION=3.11.1
 set PYTHON_INSTALLER=python-%PYTHON_VERSION%-amd64.exe
 set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/%PYTHON_INSTALLER%
 
 if not exist "build\%PYTHON_INSTALLER%" (
-    echo Downloading Python %PYTHON_VERSION% installer...
+    echo Downloading Python %PYTHON_VERSION% installer... >> build\logs\build.log
     powershell -Command "& {[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri '%PYTHON_URL%' -OutFile 'build\%PYTHON_INSTALLER%'}"
 )
 
@@ -69,24 +83,48 @@ python -m pip download webdriver-manager urllib3 certifi -d build\packages --onl
 
 rem Special handling for critical packages - ensure they're properly downloaded
 echo Ensuring critical packages are downloaded...
-python -m pip download selenium==4.10.0 -d build\packages --only-binary=:all:
-python -m pip download pynput==1.7.6 -d build\packages --only-binary=:all:
-python -m pip download pandas==1.4.4 -d build\packages --only-binary=:all:
-python -m pip download python-docx==0.8.11 -d build\packages --only-binary=:all:
+echo Downloading critical packages at %date% %time% >> build\logs\build.log
+python -m pip download selenium==4.10.0 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download pynput==1.8.0 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download pandas==2.0.3 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download numpy==1.24.3 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download python-docx==1.1.2 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download pytz==2023.3 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
+python -m pip download python-dateutil==2.8.2 -d build\packages --only-binary=:all: >> build\logs\build.log 2>&1
 
-rem Force pandas 1.4.x download
-echo Ensuring pandas 1.4.x is downloaded...
-python -m pip download "pandas>=1.4.0,<1.5.0" -d build\packages --only-binary=:all:
+rem Force specific pandas version download 
+echo Ensuring pandas 2.0.3 is downloaded...
+python -m pip download "pandas==2.0.3" -d build\packages --only-binary=:all:
 
-rem Extra focus on pynput dependencies for Python 3.9
-echo Downloading pynput and dependencies specifically for Python 3.9...
-python -m pip download --only-binary=:all: --python-version 3.9 --platform win_amd64 pynput -d build\packages
+rem Remove unnecessary pandas 1.x package removal - we want 2.0.3
+rem Verify pandas version being downloaded
+echo Verifying pandas package version...
+dir build\packages\pandas* 
+for /f "tokens=*" %%a in ('dir /b build\packages\pandas-2.0*.whl') do (
+    echo Found pandas package: %%a
+)
+
+rem Download compatible NumPy version for pandas 2.0.3
+echo Downloading compatible NumPy for pandas 2.0.3...
+python -m pip download "numpy==1.24.3" -d build\packages --only-binary=:all:
+
+rem Test numpy+pandas compatibility in the build environment (diagnostic only)
+echo Testing NumPy and Pandas compatibility (diagnostic only)...
+python -m pip install numpy==1.24.3 pandas==2.0.3 --force-reinstall --no-deps
+python -c "import numpy, pandas; print(f'NumPy {numpy.__version__} and Pandas {pandas.__version__} imported successfully')" || (
+    echo WARNING: NumPy/Pandas compatibility test failed in build environment
+    echo This won't affect the installer but indicates a potential compatibility issue
+)
+
+rem Extra focus on pynput dependencies for Python 3.11
+echo Downloading pynput and dependencies specifically for Python 3.11...
+python -m pip download --only-binary=:all: --python-version 3.11 --platform win_amd64 pynput==1.8.0 -d build\packages
 python -m pip download --only-binary=:all: six pywin32 -d build\packages
 
 rem Alternative method to ensure pynput is properly downloaded
 echo Using pip to download pynput with exact constraints...
-python -m pip download "pynput>=1.7.0,<1.8.0" --no-deps -d build\packages
-python -m pip download "pynput>=1.7.0,<1.8.0" --only-binary=:all: -d build\packages
+python -m pip download "pynput==1.8.0" --no-deps -d build\packages
+python -m pip download "pynput==1.8.0" --only-binary=:all: -d build\packages
 
 rem Test installing pynput in the build environment
 echo Testing pynput installation in build environment...
@@ -99,11 +137,11 @@ python -c "import pynput; print('Pynput test in build environment: Successfully 
 
 rem Download all pynput dependencies explicitly
 echo Downloading pynput dependencies...
-python -m pip download six pywin32 pyobjc-core pyobjc-framework-Quartz -d build\packages --only-binary=:all:
+python -m pip download six pywin32 -d build\packages --only-binary=:all:
 
 rem Verify critical packages were downloaded successfully
 echo Verifying critical packages...
-for %%p in (selenium pynput pandas python-docx) do (
+for %%p in (selenium pynput pandas python-docx pytz python-dateutil) do (
     dir build\packages\%%p* >nul 2>nul
     if %ERRORLEVEL% neq 0 (
         echo CRITICAL ERROR: Package %%p not found after download attempt!
@@ -183,13 +221,18 @@ if not exist "build\formmaster.ico" (
 
 rem Build the installer using the simple script
 echo Building installer...
-%NSIS_PATH% simple_installer.nsi
+echo Building installer at %date% %time% >> build\logs\build.log
+%NSIS_PATH% simple_installer.nsi /V4 /NOCD >> build\logs\build.log 2>&1
 
 echo Done!
 if exist build\Form-Master-Setup.exe (
     echo Installer created: build\Form-Master-Setup.exe
+    echo Installer created: build\Form-Master-Setup.exe at %date% %time% >> build\logs\build.log
+    echo Build logs are available in build\logs\build.log
 ) else (
+    echo Error: Installer not created. >> build\logs\build.log
     echo Error: Installer not created.
+    echo Check the build logs at build\logs\build.log for details
 )
 
 pause
