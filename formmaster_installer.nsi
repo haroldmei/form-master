@@ -2,7 +2,7 @@
 Unicode true
 
 !define APPNAME "Form-Master"
-!define VERSION "0.1.1"
+!define VERSION "0.1.3"
 !define PYTHON_VERSION "3.11.4"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
@@ -146,9 +146,13 @@ Section "Install"
     SetOutPath "$INSTDIR\packages"
     File /r "build\packages\*.*"
     
-    ; Create drivers directory and copy drivers
-    CreateDirectory "$INSTDIR\drivers"
-    SetOutPath "$INSTDIR\drivers"
+    ; Create drivers directory in user profile and copy drivers
+    DetailPrint "Setting up drivers in user profile..."
+    ; Get user profile directory
+    System::Call 'kernel32::GetEnvironmentVariable(t "USERPROFILE", t .r1, i ${NSIS_MAX_STRLEN})'
+    ; Create the .formmaster directory in user profile
+    CreateDirectory "$1\.formmaster"
+    SetOutPath "$1\.formmaster"
     File /r "src\drivers\*.*"
     
     ; Install formmaster from local packages
@@ -183,10 +187,10 @@ Section "Install"
     
     ; Configure environment for drivers
     DetailPrint "Configuring drivers path..."
-    ${If} ${FileExists} "$INSTDIR\drivers\chromedriver\chromedriver.exe"
-        System::Call 'Kernel32::SetEnvironmentVariableA(t, t) i("PATH", "$INSTDIR\drivers\chromedriver;$PATH").r0'
+    ${If} ${FileExists} "$1\.formmaster\chromedriver\chromedriver.exe"
+        System::Call 'Kernel32::SetEnvironmentVariableA(t, t) i("PATH", "$1\.formmaster\chromedriver;$PATH").r0'
         ReadEnvStr $R0 "PATH"
-        WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" "$INSTDIR\drivers\chromedriver;$R0"
+        WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" "$1\.formmaster\chromedriver;$R0"
     ${EndIf}
     
     ; Create context menu entries
@@ -257,12 +261,16 @@ Section "Uninstall"
     DetailPrint "Uninstalling Form-Master package..."
     nsExec::ExecToStack 'python -m pip uninstall -y formmaster'
     
+    ; Remove drivers from user profile
+    System::Call 'kernel32::GetEnvironmentVariable(t "USERPROFILE", t .r1, i ${NSIS_MAX_STRLEN})'
+    DetailPrint "Removing drivers from $1\.formmaster"
+    RMDir /r "$1\.formmaster"
+    
     ; Remove program files
     Delete "$INSTDIR\uninstall.exe"
     Delete "$INSTDIR\LICENSE"
     Delete "$INSTDIR\README.md"
     Delete "$INSTDIR\context.reg"
-    RMDir /r "$INSTDIR\drivers"
     RMDir /r "$INSTDIR\packages"
     
     ; Remove start menu shortcuts

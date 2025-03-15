@@ -107,7 +107,8 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
                 local_driver_paths = [
                     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'drivers', 'chromedriver', 'chromedriver.exe'),
                     os.path.join(os.path.dirname(os.path.abspath(__file__)), 'drivers', 'chromedriver.exe'),
-                    "C:\\drivers\\chromedriver.exe"
+                    os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', 'chromedriver.exe'),
+                    "C:\\drivers\\chromedriver.exe",
                 ]
                 
                 for path in local_driver_paths:
