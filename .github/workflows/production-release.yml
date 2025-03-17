@@ -27,7 +27,7 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          $version = (Get-Content setup.py | Select-String -Pattern "version\s*=\s*['\"](.*)['\"]" | ForEach-Object { $_.Matches.Groups[1].Value })
+          $version = '0.1.10'  # Replace with your version extraction logic
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
       
       - name: Build Python package

@@ -4,17 +4,7 @@ Script to automatically increment version numbers across multiple files:
 - setup.py
 - pyproject.toml
 - formmaster_installer.nsi
-
-This script automatically increments the version number across your project files. It:
-
-Reads the current version from setup.py
-Increments it according to semantic versioning (major.minor.patch)
-Updates all specified files with the new version
-You can run it as follows:
-
-For a patch update (1.2.3 → 1.2.4): python increment_version.py
-For a minor update (1.2.3 → 1.3.0): python increment_version.py --type minor
-For a major update (1.2.3 → 2.0.0): python increment_version.py --type major
+- .github/workflows/production-release.yml
 """
 
 import re
@@ -112,6 +102,28 @@ def update_nsis_installer(nsis_path, new_version):
     print(f"Updated {nsis_path} to version {new_version}")
 
 
+def update_github_workflow(workflow_path, new_version):
+    """Update version in GitHub Actions workflow file"""
+    if not os.path.exists(workflow_path):
+        print(f"Warning: {workflow_path} not found, skipping...")
+        return
+        
+    with open(workflow_path, 'r') as f:
+        content = f.read()
+    
+    # Update the hardcoded version in the Extract version step
+    updated_content = re.sub(
+        r"(\$version = ['\"])([0-9]+\.[0-9]+\.[0-9]+)(['\"])",
+        fr"\g<1>{new_version}\g<3>",
+        content
+    )
+    
+    with open(workflow_path, 'w') as f:
+        f.write(updated_content)
+    
+    print(f"Updated {workflow_path} to version {new_version}")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Increment version numbers across project files')
     parser.add_argument(
@@ -126,6 +138,7 @@ def main():
     setup_path = "setup.py"
     pyproject_path = "pyproject.toml"
     nsis_path = "formmaster_installer.nsi"
+    workflow_path = ".github/workflows/production-release.yml"
     
     # Get current version and increment it
     try:
@@ -138,6 +151,7 @@ def main():
         update_setup_py(setup_path, new_version)
         update_pyproject_toml(pyproject_path, new_version)
         update_nsis_installer(nsis_path, new_version)
+        update_github_workflow(workflow_path, new_version)
         
         print(f"Successfully updated version to {new_version}")
     except Exception as e:
