@@ -11,6 +11,9 @@ OutFile "build\FormMaster-Setup.exe"
 InstallDir "$PROGRAMFILES64\FormMaster"
 RequestExecutionLevel admin
 
+; Set application icon for the installer
+Icon "FormMaster.ico"
+
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 
@@ -295,9 +298,6 @@ Section "Install"
     CreateShortcut "$SMPROGRAMS\FormMaster\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller' "$INSTDIR\FormMaster.ico"
     CreateShortcut "$SMPROGRAMS\FormMaster\Uninstall.lnk" "$INSTDIR\uninstall.exe"
     CreateShortcut "$DESKTOP\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller' "$INSTDIR\FormMaster.ico"
-    
-    ; Add icon to the executable
-    Icon "FormMaster.ico"
     
     ; Install the icon file
     File "FormMaster.ico"
