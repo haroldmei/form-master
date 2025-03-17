@@ -29,6 +29,7 @@ from forms.usyd.qualifications_record_of_exclusions import QualificationsRecordO
 from forms.usyd.qualifications_second_school_studies import QualificationsSecondSchoolStudies
 
 from forms.usyd.scholarships import Scholarships
+from forms.usyd.login_form import LoginForm
 
 class mod1(form_base):
     
@@ -131,20 +132,7 @@ class mod1(form_base):
                     wait = WebDriverWait(driver, 100)
                     wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
 
-                    # username/password
-                    username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
-                    password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
-                    login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
-                    self.set_value(username_input, username)
-                    self.set_value(password_input, password)
-                    self.check_button(login_submit)
-                    
-                    wait = WebDriverWait(driver, 100)
-                    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-                    applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
-                    self.check_button(applications)
-                    manage_applications = '//*[@id="APAGN01"]'
-                    self.check_button(manage_applications)
+                    LoginForm(driver, self.data).run()
 
                     return main_window
                     

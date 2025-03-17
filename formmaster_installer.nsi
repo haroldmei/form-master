@@ -3,6 +3,9 @@ Unicode true
 
 !define APPNAME "FormMaster"
 !define VERSION "0.1.13"
+!define PUBLISHER "FormMaster Team"
+!define WEBSITE "https://your-website.com"
+!define SUPPORT_EMAIL "support@your-website.com"
 !define PYTHON_VERSION "3.11.4"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
@@ -309,7 +312,10 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "DisplayName" "FormMaster"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "UninstallString" '"$INSTDIR\uninstall.exe"'
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "DisplayVersion" "${VERSION}"
-    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "Publisher" "FormMaster Team"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "Publisher" "${PUBLISHER}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "URLInfoAbout" "${WEBSITE}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "HelpLink" "${WEBSITE}/support"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\FormMaster" "DisplayIcon" "$INSTDIR\FormMaster.ico"
 SectionEnd
 
 Section "Uninstall"

@@ -34,6 +34,7 @@ import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from forms.utils.form_utils import set_value_by_id, select_option_by_id, check_button_by_id, is_element_visible
 
 class Scholarships:
     def __init__(self, driver, data):
@@ -50,7 +51,7 @@ class Scholarships:
         
         if has_scholarship:
             # Select "Yes" for scholarship awarded
-            self.check_button_by_id("IPQ_APONSH13A")
+            check_button_by_id(driver, "IPQ_APONSH13A")
             
             # Wait for the scholarship name field to appear
             WebDriverWait(driver, 10).until(
@@ -62,17 +63,17 @@ class Scholarships:
             if not scholarship_name:
                 scholarship_name = "Study Abroad Scholarship"  # Default placeholder
                 
-            self.set_value_by_id("IPQ_APONSH14", scholarship_name)
+            set_value_by_id(driver, "IPQ_APONSH14", scholarship_name)
         else:
             # Select "No" for scholarship awarded
-            self.check_button_by_id("IPQ_APONSH13B")
+            check_button_by_id(driver, "IPQ_APONSH13B")
         
         # Check if the student has applied for a pending scholarship
         has_pending_scholarship = personal_info.get('has_pending_scholarship', False)
         
         if has_pending_scholarship:
             # Select "Yes" for pending scholarship
-            self.check_button_by_id("IPQ_APONSH15A")
+            check_button_by_id(driver, "IPQ_APONSH15A")
             
             # Wait for the pending scholarship name field to appear
             WebDriverWait(driver, 10).until(
@@ -84,24 +85,24 @@ class Scholarships:
             if not pending_scholarship_name:
                 pending_scholarship_name = "International Student Merit Scholarship"  # Default
                 
-            self.set_value_by_id("IPQ_APONSH16", pending_scholarship_name)
+            set_value_by_id(driver, "IPQ_APONSH16", pending_scholarship_name)
         else:
             # Select "No" for pending scholarship
-            self.check_button_by_id("IPQ_APONSH15B")
+            check_button_by_id(driver, "IPQ_APONSH15B")
         
         # Country of birth (required)
         birth_country = personal_info.get('birth_country', '')
         if not birth_country:
             # Default to the regular country if birth country isn't specified
             birth_country = personal_info.get('Country', 'China (Excludes SARS and Taiwan)')
-        self.select_option_by_id("IPQ_APONCOB", birth_country)
+        select_option_by_id(driver, "IPQ_APONCOB", birth_country)
         
         # Citizenship/residency status (required)
         residency_status = personal_info.get('residency_status', '')
         if not residency_status:
             # Default to student visa for international applications
             residency_status = 'Student visa or other temporary visa'
-        self.select_option_by_id("IPQ_APONLNID", residency_status)
+        select_option_by_id(driver, "IPQ_APONLNID", residency_status)
         
         # Wait for conditional fields based on residency status selection
         WebDriverWait(driver, 10).until(
@@ -110,30 +111,30 @@ class Scholarships:
         
         # Handle fields that may appear conditionally
         # First arrival date (if visible)
-        if self.is_element_visible("date-of-arrival-in-australia"):
+        if is_element_visible(driver, "date-of-arrival-in-australia"):
             arrival_date = personal_info.get('australia_arrival_date', '01/01/2020')
-            self.set_value_by_id("IPQ_APONEND", arrival_date)
+            set_value_by_id(driver, "IPQ_APONEND", arrival_date)
         
         # Country of citizenship (if visible)
-        if self.is_element_visible("country-of-citizenship"):
+        if is_element_visible(driver, "country-of-citizenship"):
             citizenship = personal_info.get('citizenship_country', '')
             if not citizenship:
                 citizenship = personal_info.get('Country', 'China (Excludes SARS and Taiwan)')
-            self.select_option_by_id("IPQ_APONCOD", citizenship)
+            select_option_by_id(driver, "IPQ_APONCOD", citizenship)
         
         # Visa type (if visible)
-        if self.is_element_visible("visa-type"):
+        if is_element_visible(driver, "visa-type"):
             visa_type = personal_info.get('visa_type', 'Student')
-            self.select_option_by_id("dummy_visa_type", visa_type)
+            select_option_by_id(driver, "dummy_visa_type", visa_type)
             
             # Visa start date (if visible)
-            if self.is_element_visible("visa-start-date"):
+            if is_element_visible(driver, "visa-start-date"):
                 visa_start = personal_info.get('visa_start_date', '01/01/2020')
-                self.set_value_by_id("IPQ_APONVSD", visa_start)
+                set_value_by_id(driver, "IPQ_APONVSD", visa_start)
         
         # Aboriginal/Torres Strait Islander origin (required)
         indigenous_status = personal_info.get('indigenous_status', 'Neither Australian Aboriginal nor Torres Strait Islander')
-        self.select_option_by_id("IPQ_APONETH1", indigenous_status)
+        select_option_by_id(driver, "IPQ_APONETH1", indigenous_status)
         
         # Language spoken at home (required)
         home_language = personal_info.get('home_language', '')
@@ -150,31 +151,4 @@ class Scholarships:
                 home_language = 'Hindi'
             else:
                 home_language = 'English'
-        self.select_option_by_id("IPQ_APONSSL", home_language)
-    
-    def set_value_by_id(self, element_id, value):
-        """Set value to an input field by ID"""
-        element = self.driver.find_element(By.ID, element_id)
-        element.clear()
-        element.send_keys(value)
-    
-    def select_option_by_id(self, element_id, option_text):
-        """Select an option from a dropdown by ID"""
-        # For chosen-enhanced dropdowns, need to click and then select
-        dropdown = self.driver.find_element(By.ID, f"{element_id}_chosen")
-        dropdown.click()
-        
-        # Find and click the option with matching text
-        options = self.driver.find_elements(By.CSS_SELECTOR, f"#{element_id}_chosen .chosen-results li")
-        for option in options:
-            if option_text.lower() in option.text.lower():
-                option.click()
-                break
-    
-    def is_element_visible(self, element_id):
-        """Check if an element is visible on the page"""
-        try:
-            element = self.driver.find_element(By.ID, element_id)
-            return element.is_displayed()
-        except:
-            return False
+        select_option_by_id(driver, "IPQ_APONSSL", home_language)
