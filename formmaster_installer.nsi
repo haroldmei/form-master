@@ -2,7 +2,7 @@
 Unicode true
 
 !define APPNAME "FormMaster"
-!define VERSION "0.1.10"
+!define VERSION "0.1.11"
 !define PYTHON_VERSION "3.11.4"
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
