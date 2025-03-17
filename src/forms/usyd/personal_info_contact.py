@@ -27,9 +27,11 @@
 					</div>
 '''
 
-import re
 from selenium.webdriver.common.by import By
-from forms.utils.form_utils import set_value_by_id, select_option_by_id, check_button_by_id
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from forms.utils.form_utils import set_value_by_id
 
 class PersonalInfoContact:
     def __init__(self, driver, data):
@@ -41,41 +43,51 @@ class PersonalInfoContact:
         driver = self.driver
         personal_info = students[-1][0]
         
-        # Telephone number (required unless mobile is provided)
-        phone = personal_info.get('Phone', '')
-        mobile = personal_info.get('Mobile', '')
-        
-        # At least one of phone or mobile is required
-        if not phone and not mobile:
-            phone = "+61 2 1234 5678"  # Default placeholder
-        
-        set_value_by_id(driver, "IPR_HTEL", phone)
-        set_value_by_id(driver, "IPR_HAT3", mobile)
-        
-        # Email address (required)
-        email = personal_info.get('Email', '')
-        if not email:
-            email = personal_info.get('email', '')  # Try alternate key
-        
-        if not email:
-            email = "student@example.com"  # Default placeholder
+        try:
+            # Applicant's telephone (required unless mobile is provided)
+            phone = personal_info.get("Student's Tel.", '')
+            mobile = personal_info.get("Student's mobile", '')
             
-        set_value_by_id(driver, "IPR_HAEM", email)
-        
-        # Country selection for permanent address
-        select_option_by_id(driver, "IPR_CODC", personal_info.get('Country', 'China (Excludes SARS and Taiwan)'))
-        
-        # Permanent address fields
-        set_value_by_id(driver, "IPR_HAD1", personal_info.get('line1', ''))
-        set_value_by_id(driver, "IPR_HAD2", personal_info.get('line2', ''))
-        set_value_by_id(driver, "IPR_HAD3", personal_info.get('line3', ''))
-        set_value_by_id(driver, "IPR_HAD4", personal_info.get('city', ''))
-        set_value_by_id(driver, "IPR_HAD5", personal_info.get('province', ''))
-        
-        # Handle post code
-        post_code = personal_info.get('Post Code', '')
-        if not re.search(r'\d+', str(post_code)):
-            post_code = '0000'
-        set_value_by_id(driver, "IPR_HAPC", post_code)
+            # At least one contact number is required
+            if not phone and not mobile:
+                # Generate default if neither phone nor mobile is provided
+                country_code = self.get_country_code(personal_info.get('Country', ''))
+                phone = f"{country_code} 123456789"  # Default placeholder
+            
+            if phone:
+                set_value_by_id(driver, "IPR_HTEL", phone)
+            
+            # Applicant's mobile (optional if telephone provided)
+            if mobile:
+                set_value_by_id(driver, "IPR_HAT3", mobile)
+            
+            # Applicant's email (required)
+            email = personal_info.get("Student's Email", '')            
+            set_value_by_id(driver, "IPR_HAEM", email)
+            
+        except Exception as e:
+            print(f"Error filling contact information: {e}")
     
-    # Methods removed as they're now imported from form_utils.py
+    def get_country_code(self, country):
+        """Get telephone country code based on country name"""
+        country_codes = {
+            'china': '+86',
+            'australia': '+61',
+            'united states': '+1',
+            'usa': '+1',
+            'india': '+91',
+            'japan': '+81',
+            'korea': '+82',
+            'singapore': '+65',
+            'malaysia': '+60',
+            'indonesia': '+62',
+            'vietnam': '+84',
+            'thailand': '+66',
+        }
+        
+        # Default to China if country not found
+        for key, code in country_codes.items():
+            if key.lower() in country.lower():
+                return code
+        
+        return '+86'  # Default to China code

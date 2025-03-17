@@ -10,6 +10,7 @@ import sys
 import os
 import re
 import winreg
+import time
 
 from forms.usyd.create_profile import CreateProfileForm
 from forms.usyd.personal_info_address import PersonalInfoAddress
@@ -134,6 +135,10 @@ class mod1(form_base):
 
                     LoginForm(driver, self.data).run()
 
+                    if not self.collect_mode:
+                        print('\n\n ================ personal info ================= \n', self.data[-1][3])
+                        print('\n\n ================= edu info: ================= \n', self.data[-1][1])
+                        print('\n\n ================= application info: ================= \n', self.data[-1][2])
                     return main_window
                     
                 except Exception as e:

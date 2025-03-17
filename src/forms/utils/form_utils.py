@@ -1,5 +1,8 @@
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import InvalidElementStateException
+from selenium.common.exceptions import InvalidElementStateException, ElementClickInterceptedException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 def set_value_by_id(driver, element_id, value):
     """Set value to an input field by ID"""
@@ -18,16 +21,48 @@ def select_option_by_id(driver, element_id, option_text):
     try:
         # For chosen-enhanced dropdowns, need to click and then select
         dropdown = driver.find_element(By.ID, f"{element_id}_chosen")
-        dropdown.click()
         
-        # Find and click the option with matching text
+        # Scroll dropdown into view before clicking
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", dropdown)
+        
+        # Try clicking with wait for it to be clickable
+        try:
+            WebDriverWait(driver, 5).until(
+                EC.element_to_be_clickable((By.ID, f"{element_id}_chosen"))
+            ).click()
+        except:
+            # Fallback to JavaScript click if regular click doesn't work
+            driver.execute_script("arguments[0].click();", dropdown)
+        
+        # Find options and try to match text
         options = driver.find_elements(By.CSS_SELECTOR, f"#{element_id}_chosen .chosen-results li")
+        matched_option = None
+        
         for option in options:
             if option_text.lower() in option.text.lower():
-                option.click()
+                matched_option = option
                 break
+        
+        if matched_option:
+            # Scroll the option into view
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", matched_option)
+            
+            try:
+                # Try using ActionChains for better click control
+                ActionChains(driver).move_to_element(matched_option).click().perform()
+            except ElementClickInterceptedException:
+                # If still intercepted, use JavaScript click
+                driver.execute_script("arguments[0].click();", matched_option)
     except Exception as e:
         print(f"Error selecting option for element {element_id}: {e}")
+        # Last resort - try direct value setting if possible
+        try:
+            select_element = driver.find_element(By.ID, element_id)
+            driver.execute_script(f"document.getElementById('{element_id}').value = '{option_text}';")
+            # Trigger change event to ensure the UI updates
+            driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", select_element)
+        except:
+            print(f"Failed to set value for dropdown {element_id} using JavaScript fallback")
 
 def check_button_by_id(driver, element_id):
     """Check a checkbox or radio button by ID"""
@@ -45,7 +80,7 @@ def select_radio_by_value(driver, name, value):
         radio_buttons = driver.find_elements(By.CSS_SELECTOR, f"input[name='{name}'][value='{value}']")
         
         # Click the first matching radio button if found
-        if radio_buttons:
+        if (radio_buttons):
             if not radio_buttons[0].is_selected():
                 radio_buttons[0].click()
     except Exception as e:

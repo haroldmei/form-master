@@ -149,14 +149,14 @@ class PersonalInfoDetails:
         set_value_by_id(driver, "IPR_SURN", family_name)
         
         # Known as name (required) - use given name if not specified
-        known_as = personal_info.get('Known As', given_name)
+        known_as = personal_info.get('Given Name', given_name)
         set_value_by_id(driver, "IPR_FUSD", known_as)
         
         # Previous name (optional)
         set_value_by_id(driver, "IPQ_APONPRVS", personal_info.get('Previous Name', ''))
         
         # Official name (required) - use full name if not specified
-        official_name = personal_info.get('Official Name', '')
+        official_name = f"{personal_info['Given Name']} {personal_info['Family Name']}"
         if not official_name:
             official_name = f"{given_name} {family_name}"
         set_value_by_id(driver, "IPQ_APONOFFN", official_name)
