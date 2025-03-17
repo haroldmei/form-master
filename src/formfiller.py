@@ -72,21 +72,25 @@ def on_click(x, y, button, pressed):
     if pressed:
         return
     
-    #logger.debug(f'DEBUG >>> {driver.window_handles}, {driver.current_window_handle}')
-    with lock:
-        if button.name == 'middle':        
-            module.run()
-            return
-        
-        elif button.name == 'left':
-            wait = WebDriverWait(driver, 10)
-            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-            if driver.window_handles[-1] != driver.current_window_handle:
-                logger.info('>>> window switching done')
-                driver.switch_to.window(driver.window_handles[-1])
-            return
-        else:
-            return
+    try:
+        #logger.debug(f'DEBUG >>> {driver.window_handles}, {driver.current_window_handle}')
+        with lock:
+            if button.name == 'middle':        
+                module.run()
+                return
+
+            elif button.name == 'left':
+                wait = WebDriverWait(driver, 10)
+                wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+                if driver.window_handles[-1] != driver.current_window_handle:
+                    logger.info('>>> window switching done')
+                    driver.switch_to.window(driver.window_handles[-1])
+                return
+            else:
+                return
+    except Exception as e:
+        logger.error(f"Error in on_click: {e}")
+        os._exit(1)  # Force exit since we're in a threaded context
 
 def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), uni = 'usyd', mode = 0):
     global main_application_handle
