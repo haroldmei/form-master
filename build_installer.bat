@@ -67,6 +67,6 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo Installer created successfully!
-echo Installer location: build\FormMaster-Setup.exe
+echo Installer location: dist\FormMaster-Setup.exe
 
 pause

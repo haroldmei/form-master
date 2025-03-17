@@ -7,7 +7,7 @@ Unicode true
 !define PYTHON_INSTALLER "python-${PYTHON_VERSION}-amd64.exe"
 
 Name "${APPNAME} ${VERSION}"
-OutFile "build\FormMaster-Setup.exe"
+OutFile "dist\FormMaster-Setup.exe"
 InstallDir "$PROGRAMFILES64\FormMaster"
 RequestExecutionLevel admin
 
