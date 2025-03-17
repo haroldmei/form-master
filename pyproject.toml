@@ -33,3 +33,7 @@ py-modules = ["formfiller", "etl"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["src/requirements.txt"]}
+
+[tool.pyinstaller]
+hiddenimports = ["selenium", "webdriver_manager"]
+icon = "FormMaster.ico"

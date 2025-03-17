@@ -51,8 +51,8 @@ Function EscapeBackslashes
 FunctionEnd
 
 ; Modern UI settings
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+!define MUI_ICON "FormMaster.ico"
+!define MUI_UNICON "FormMaster.ico"
 
 ; Pages
 !insertmacro MUI_PAGE_WELCOME
@@ -292,9 +292,15 @@ Section "Install"
     
     ; Create shortcuts with absolute Python path
     CreateDirectory "$SMPROGRAMS\FormMaster"
-    CreateShortcut "$SMPROGRAMS\FormMaster\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller'
+    CreateShortcut "$SMPROGRAMS\FormMaster\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller' "$INSTDIR\FormMaster.ico"
     CreateShortcut "$SMPROGRAMS\FormMaster\Uninstall.lnk" "$INSTDIR\uninstall.exe"
-    CreateShortcut "$DESKTOP\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller'
+    CreateShortcut "$DESKTOP\FormMaster.lnk" "cmd.exe" '/k "$9" -m formfiller' "$INSTDIR\FormMaster.ico"
+    
+    ; Add icon to the executable
+    Icon "FormMaster.ico"
+    
+    ; Install the icon file
+    File "FormMaster.ico"
     
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\uninstall.exe"

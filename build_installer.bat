@@ -55,6 +55,9 @@ if %ERRORLEVEL% neq 0 (
     copy dist\*.whl build\packages\
 )
 
+rem Make sure the icon file is copied to the build directory
+copy FormMaster.ico dist\FormMaster.ico
+
 rem Create installer using NSIS
 echo Building installer with NSIS...
 %NSIS_PATH% formmaster_installer.nsi
@@ -63,7 +66,7 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo FormMaster installer build completed successfully.
+echo Installer created successfully!
 echo Installer location: build\FormMaster-Setup.exe
 
 pause
