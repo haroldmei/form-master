@@ -47,8 +47,10 @@ jobs:
           choco install nsis -y
       
       - name: Build Windows installer
+        shell: cmd
         run: |
-          build_installer.bat
+          cd ${{ github.workspace }}
+          call build_installer.bat
       
       - name: Create GitHub Release
         id: create_release
