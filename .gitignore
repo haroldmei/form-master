@@ -12,7 +12,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+build/packages/
 develop-eggs/
 dist/
 downloads/
@@ -66,5 +66,4 @@ venv.bak/
 .vscode/
 *.swp
 
-drivers
 FormMaster-Setup.exe

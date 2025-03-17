@@ -9,6 +9,7 @@ from getpass import getpass
 import os
 import re
 import time
+import winreg
 
 class mod2(form_base):
     
@@ -26,12 +27,62 @@ class mod2(form_base):
         driver = self.driver
         
         if not re.search('https://applyonline.unsw.edu.au/agent/homepage', driver.current_url):
-            username = os.getenv('NSW_USER', '')
-            password = os.getenv('NSW_PASS', '')
-            if not username:
+            # Define environment variable names for credentials
+            username_var = "FORMMASTER_UNSW_USERNAME"
+            password_var = "FORMMASTER_UNSW_PASSWORD"
+            
+            # First try to get credentials from current process environment
+            username = os.environ.get(username_var)
+            password = os.environ.get(password_var)
+            
+            # If not found in current environment, try reading from registry
+            if not username or not password:
+                try:
+                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment")
+                    try:
+                        username = winreg.QueryValueEx(key, username_var)[0]
+                        password = winreg.QueryValueEx(key, password_var)[0]
+                        
+                        # Set in current process environment for future use
+                        if username and password:
+                            os.environ[username_var] = username
+                            os.environ[password_var] = password
+                    except WindowsError:
+                        pass
+                    winreg.CloseKey(key)
+                except WindowsError:
+                    pass
+            
+            # If still not found, prompt user and store
+            if not username or not password:
+                print("First-time login: Credentials will be stored in user environment variables")
                 username = input('Username: ')
                 password = getpass()
-
+                
+                # Store in current process environment
+                os.environ[username_var] = username
+                os.environ[password_var] = password
+                
+                # Store in Windows registry under current user (User Variables)
+                try:
+                    key = winreg.CreateKeyEx(
+                        winreg.HKEY_CURRENT_USER, 
+                        r"Environment", 
+                        0, 
+                        winreg.KEY_WRITE
+                    )
+                    winreg.SetValueEx(key, username_var, 0, winreg.REG_SZ, username)
+                    winreg.SetValueEx(key, password_var, 0, winreg.REG_SZ, password)
+                    winreg.CloseKey(key)
+                    print("Credentials stored successfully in user environment variables")
+                    
+                    # Broadcast WM_SETTINGCHANGE to notify all windows of environment change
+                    print("Note: You may need to restart the application for the changes to take effect")
+                except Exception as e:
+                    print(f"Could not store credentials permanently: {e}")
+                    print("Credentials will be available only for this session.")
+            
+            # Use the credentials for login
             driver.get(self.entry_url)
 
             wait = WebDriverWait(driver, 100)

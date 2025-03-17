@@ -9,6 +9,26 @@ from getpass import getpass
 import sys
 import os
 import re
+import winreg
+
+from forms.usyd.create_profile import CreateProfileForm
+from forms.usyd.personal_info_address import PersonalInfoAddress
+from forms.usyd.personal_info_address_perm import PersonalInfoAddressPerm
+from forms.usyd.personal_info_contact import PersonalInfoContact
+#from forms.usyd.personal_info_details import PersonalInfoDetails
+from forms.usyd.personal_info_residency import PersonalInfoResidency
+from forms.usyd.personal_info_course_applications import PersonalInfoCouseApplications
+from forms.usyd.personal_info_enrollment import PersonalInfoEnrollment
+from forms.usyd.personal_info_enrollment_status import PersonalInfoEnrollmentStatus
+from forms.usyd.personal_info_fee_waiver import PersonalInfoFeeWeaver
+
+from forms.usyd.qualifications_second_school_studies import QualificationsSecondSchoolStudies
+from forms.usyd.qualifications_academic_qualifications import QualificationsAcademicQualifications
+from forms.usyd.qualifications_language_proficiency import QualificationsLanguageProficiency
+from forms.usyd.qualifications_record_of_exclusions import QualificationsRecordOfExclusions
+from forms.usyd.qualifications_second_school_studies import QualificationsSecondSchoolStudies
+
+from forms.usyd.scholarships import Scholarships
 
 class mod1(form_base):
     
@@ -19,347 +39,170 @@ class mod1(form_base):
         self.entry_url = 'https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn'
 
     def create_profile(self):
-        students = self.data
-        driver = self.driver
-
-        personal_info = students[-1][0]
-
-        #print('Now processing: ', personal_info)
-        given_name =  '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[1]/div/input'
-        self.set_value(given_name, personal_info['Given Name'])
-
-        family_name = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[2]/div/input'
-        self.set_value(family_name, personal_info['Family Name'])
-
-        dob = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[3]/div/div/input'
-        self.set_value(dob, personal_info['DOB (dd/mm/yyyy)'])
-
-        email = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[4]/div/input'
-        self.set_value(email, personal_info["Student's Email"])
-
-        confirmed_email = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[5]/div/input'
-        self.set_value(confirmed_email, personal_info["Student's Email"])
-
-        username = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[6]/div/input'
-        str_username = f'{personal_info["Family Name"].upper()}{personal_info["Given Name"].lower()}{personal_info["DOB (dd/mm/yyyy)"].split("/")[-1]}'
-        str_username = str_username.replace(' ', '')
-        if personal_info["Number"] > 0:
-            str_username = f"{str_username}{personal_info['Number'] + 1}"
-        self.set_value(username, str_username)
-
-        password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[7]/div/input'
-        password_val = f"{personal_info['DOB (dd/mm/yyyy)'].split('/')[-1]}{personal_info['Family Name'].upper()}{personal_info['Given Name'].lower()}"
-        password_val = password_val.replace(' ', '')
-        self.set_value(password, password_val) # default use email as username
-
-        confirmed_password = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[8]/div/input'
-        self.set_value(confirmed_password, password_val)
-
-        tnc = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[9]/div/label/input[2]'
-        self.check_button(tnc)
-
-        acknowledge = '/html/body/div[1]/form/div/div/div/div[2]/div/div/div[10]/div/label/input[2]'
-        self.check_button(acknowledge)
+        CreateProfileForm(self.driver, self.data).run()
 
     def login_session(self):
-        students = self.data
-        driver = self.driver
-
-        if not re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_portal.url.*', driver.current_url):
+        """
+        Logs in to the application and returns the main window handle
+        """
+        try:
+            driver = self.driver
+            url = "https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_lgn"
             
-            username = os.getenv('SYD_USER', '')
-            password = os.getenv('SYD_PASS', '')
-            if not username:
-                username = input('Username: ')
-                password = getpass()
-
-            driver.get(self.entry_url)
-
-            wait = WebDriverWait(driver, 100)
-            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-
-            # username/password
-            username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
-            password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
-            login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
-            self.set_value(username_input, username)
-            self.set_value(password_input, password)
-            self.check_button(login_submit)
+            # Set a max retry count
+            max_retries = 3
+            current_try = 0
             
-            wait = WebDriverWait(driver, 100)
-            wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-            applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
-            self.check_button(applications)
-            manage_applications = '//*[@id="APAGN01"]'
-            self.check_button(manage_applications)
+            while current_try < max_retries:
+                try:
+                    driver.get(url)
+                    
+                    # Ensure the browser is still open after navigation
+                    if not driver.window_handles:
+                        raise Exception("Browser window was closed")
+                    
+                    # Set explicit wait
+                    wait = WebDriverWait(driver, 30)
+                    
+                    # Wait for page to load
+                    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+                    
+                    # Store the main window handle
+                    main_window = driver.current_window_handle
+                    
+                    # Continue with login process...
+                    # Define environment variable names for credentials
+                    username_var = "FORMMASTER_USYD_USERNAME"
+                    password_var = "FORMMASTER_USYD_PASSWORD"
+                    
+                    # First try to get credentials from current process environment
+                    username = os.environ.get(username_var)
+                    password = os.environ.get(password_var)
+                    
+                    # If not found in current environment, try reading from registry
+                    if not username or not password:
+                        try:
+                            key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Environment")
+                            try:
+                                username = winreg.QueryValueEx(key, username_var)[0]
+                                password = winreg.QueryValueEx(key, password_var)[0]
+                                
+                                # Set in current process environment for future use
+                                if username and password:
+                                    os.environ[username_var] = username
+                                    os.environ[password_var] = password
+                            except WindowsError:
+                                pass
+                            winreg.CloseKey(key)
+                        except WindowsError:
+                            pass
+                    
+                    # If still not found, prompt user and store
+                    if not username or not password:
+                        print("First-time login: Credentials will be stored in user environment variables")
+                        username = input('Username: ')
+                        password = getpass()
+                        
+                        # Store in current process environment
+                        os.environ[username_var] = username
+                        os.environ[password_var] = password
+                        
+                        # Store in Windows registry under current user (User Variables)
+                        try:
+                            key = winreg.CreateKeyEx(
+                                winreg.HKEY_CURRENT_USER, 
+                                r"Environment", 
+                                0, 
+                                winreg.KEY_WRITE
+                            )
+                            winreg.SetValueEx(key, username_var, 0, winreg.REG_SZ, username)
+                            winreg.SetValueEx(key, password_var, 0, winreg.REG_SZ, password)
+                            winreg.CloseKey(key)
+                            print("Credentials stored successfully in user environment variables")
+                            
+                            # Broadcast WM_SETTINGCHANGE to notify all windows of environment change
+                            print("Note: You may need to restart the application for the changes to take effect")
+                        except Exception as e:
+                            print(f"Could not store credentials permanently: {e}")
+                            print("Credentials will be available only for this session.")
+                    
+                    driver.get(self.entry_url)
+
+                    wait = WebDriverWait(driver, 100)
+                    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+
+                    # username/password
+                    username_input = '//*[@id="MUA_CODE.DUMMY.MENSYS"]'
+                    password_input = '//*[@id="PASSWORD.DUMMY.MENSYS"]'
+                    login_submit = '/html/body/div/form/div[4]/div/div/div[2]/div/fieldset/div[3]/div[1]/div/input'
+                    self.set_value(username_input, username)
+                    self.set_value(password_input, password)
+                    self.check_button(login_submit)
+                    
+                    wait = WebDriverWait(driver, 100)
+                    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+                    applications = '/html/body/header/nav/div[2]/ul/li[2]/a/b'
+                    self.check_button(applications)
+                    manage_applications = '//*[@id="APAGN01"]'
+                    self.check_button(manage_applications)
+
+                    return main_window
+                    
+                except Exception as e:
+                    current_try += 1
+                    print(f"Login attempt {current_try} failed: {str(e)}")
+                    
+                    if current_try >= max_retries:
+                        raise
+                    
+                    # If browser was closed, reinitialize it
+                    if "no such window" in str(e).lower() or not driver.window_handles:
+                        print("Browser window was closed. Reinitializing...")
+                        self.initialize_driver()
+                        driver = self.driver
+                    
+                    # Wait before retrying
+                    time.sleep(2)
+        
+        except Exception as e:
+            print(f"Fatal error in login_session: {str(e)}")
+            # Ensure the browser is closed on error
+            try:
+                driver.quit()
+            except:
+                pass
+            raise
 
         self.manage_applications_url = driver.current_url
         self.main_application_handle = driver.current_window_handle
         
         if not self.collect_mode:
-            print('\n\n ================ personal info ================= \n', students[-1][3])
-            print('\n\n ================= edu info: ================= \n', students[-1][1])
-            print('\n\n ================= application info: ================= \n', students[-1][2])
+            print('\n\n ================ personal info ================= \n', self.data[-1][3])
+            print('\n\n ================= edu info: ================= \n', self.data[-1][1])
+            print('\n\n ================= application info: ================= \n', self.data[-1][2])
 
         return self.main_application_handle
 
     def fill_personal_info(self):
-        students = self.data
-        driver = self.driver
+        PersonalInfoAddress(self.driver, self.data).run()
+        PersonalInfoAddressPerm(self.driver, self.data).run()
+        PersonalInfoContact(self.driver, self.data).run()
+        PersonalInfoResidency(self.driver, self.data).run()
+        PersonalInfoCouseApplications(self.driver, self.data).run()
+        PersonalInfoEnrollment(self.driver, self.data).run()
+        PersonalInfoEnrollmentStatus(self.driver, self.data).run()
+        PersonalInfoFeeWeaver(self.driver, self.data).run()
 
-        personal_info = students[-1][0]
-        title = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[1]/div/div/div/div/input'
-        givenname1='/html/body/div[1]/form/div[4]/div[2]/div/div/div[2]/div/div/div[1]/input'
-        givenname2='/html/body/div[1]/form/div[4]/div[2]/div/div/div[2]/div/div/div[2]/input'
-        givenname3='/html/body/div[1]/form/div[4]/div[2]/div/div/div[2]/div/div/div[3]/input'
-        familyname='/html/body/div[1]/form/div[4]/div[2]/div/div/div[3]/div/input'
-        akaname=   '/html/body/div[1]/form/div[4]/div[2]/div/div/div[4]/div/input'
-        prevname=  '/html/body/div[1]/form/div[4]/div[2]/div/div/div[5]/div/input'
-        officialname='/html/body/div[1]/form/div[4]/div[2]/div/div/div[6]/div/input'
-        gender = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[7]/div/div/div/div/input'
-        dob = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[8]/div/div/input'
-
-        self.set_value_list(title, 'Mr' if personal_info['Gender'] == 'Male' else 'Miss')
-        self.set_value(givenname1, personal_info['Given Name'])
-        self.set_value(familyname, personal_info['Family Name'])
-        self.set_value(akaname, personal_info['Given Name'])
-        self.set_value(officialname, f"{personal_info['Given Name']} {personal_info['Family Name']}")
-        self.set_value_list(gender, personal_info['Gender'])
-        self.set_value(dob, personal_info['DOB (dd/mm/yyyy)'])
-
-        country =            '/html/body/div[1]/form/div[7]/div[2]/div/div/div[1]/div/div/div/div/input'
-        addressline1 =       '/html/body/div[1]/form/div[7]/div[2]/div/div/div[3]/div/input'
-        addressline2 =       '/html/body/div[1]/form/div[7]/div[2]/div/div/div[4]/div/input'
-        addressline3 =       '/html/body/div[1]/form/div[7]/div[2]/div/div/div[5]/div/input'
-        city =               '/html/body/div[1]/form/div[7]/div[2]/div/div/div[6]/div/input'
-        province =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[7]/div/input'
-        postcode =           '/html/body/div[1]/form/div[7]/div[2]/div/div/div[8]/div/input'
-        check_address_same = '/html/body/div[1]/form/div[7]/div[2]/div/div/div[9]/div[2]/div/label/input'
-
-        self.set_value_list(country, 'China (Excludes SARS and Taiwan)')
-        self.set_value(addressline1, personal_info['line1'])
-        self.set_value(addressline2, personal_info['line2'])
-        self.set_value(addressline3, personal_info['line3'])
-        self.set_value(city, personal_info['city'])
-        self.set_value(province, personal_info['province'])
-
-        post = personal_info['Post Code'] if re.search('\d+', personal_info['Post Code']) else '0000'
-        self.set_value(postcode, post)
-        self.check_button(check_address_same)
-
-        parent_country = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[1]/div/div/div/div/input'
-        parent_address1 = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[3]/div/input'
-        parent_address2 = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[4]/div/input'
-        parent_address3 = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[5]/div/input'
-        parent_town = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[6]/div/input'
-        parent_state = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[7]/div/input'
-        parent_postcode = '/html/body/div[1]/form/div[8]/div[2]/div/div/div[8]/div/input'
-        
-        self.set_value_list(parent_country, 'China (Excludes SARS and Taiwan)')
-        self.set_value(parent_address1, personal_info['line1'])
-        self.set_value(parent_address2, personal_info['line2'])
-        self.set_value(parent_address3, personal_info['line3'])
-        self.set_value(parent_town, personal_info['city'])
-        self.set_value(parent_state, personal_info['province'])
-        self.set_value(parent_postcode, post)
-
-        phone = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[1]/div/input'
-        mobile = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[2]/div/input'
-        email = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[3]/div/input'
-        self.set_value(phone, personal_info["Student's Tel."])
-        self.set_value(email, personal_info["Student's Email"])
-
-        born_country = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[1]/div/div/div/div/input'
-        au_citizenship = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[2]/div/div/div/div/input'
-        nationality = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
-        is_aboriginal = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/div/div/div/input'
-        hometongue = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/div/div/div/input'
-        
-        self.set_value_list(born_country, 'China (Excludes SARS and Taiwan)')
-        self.set_value_list(au_citizenship, 'Other (non resident)')
-        self.set_value_list(nationality, 'China (Excludes SARS and Taiwan)')
-        self.set_value_list(is_aboriginal, 'Neither Aboriginal nor Torres Strait Islander')
-        self.set_value_list(hometongue, 'Mandarin')
-
-        current_at_usyd = '//*[@id="IPQ_APONPAPB"]'
-        current_student_usyd = '//*[@id="IPQ_APONLCES1B"]'
-        current_enrolled_usyd = '//*[@id="IPQ_APONLCES3B"]'
-        fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[1]/label/input'
-        no_fee_waiver = '/html/body/div[1]/form/div[15]/div[2]/div/div/div/div/div[2]/label/input'
-
-        self.check_button(current_at_usyd)
-        self.check_button(current_student_usyd)
-        self.check_button(current_enrolled_usyd)
-        self.check_button(no_fee_waiver)
 
     def fill_scholarships(self):
-        driver = self.driver
-
-        print('>>> scholarship info: ')
-        has_scholarship = '//*[@id="IPQ_APONSH13A"]'
-        scholarship_name = '//*[@id="IPQ_APONSH14"]'
-        no_scholarship = '//*[@id="IPQ_APONSH13B"]'
-        driver.find_element("xpath", no_scholarship).click()
-
-        applied_scholarship = '//*[@id="IPQ_APONSH15A"]'
-        applied_scholarship_name = '//*[@id="IPQ_APONSH16"]'
-        no_applied_scholarship = '//*[@id="IPQ_APONSH15B"]'
-        driver.find_element("xpath", no_applied_scholarship).click()
+        Scholarships(self.driver, self.data).run()
     
     def fill_your_qualifications(self):
-        
-        driver = self.driver
-        students = self.data
-
-        qualification = students[-1][1]
-        print('>>> qualification info: ', qualification)
-        not_first_language = '//*[@id="IPQ_APONEL1B"]'
-        self.check_button(not_first_language)
-
-        english_test = False
-        taken_english_test = '//*[@id="IPQ_APONEL2A"]'
-        no_english_test = '//*[@id="IPQ_APONEL2B"]'
-        if english_test:
-            self.check_button(taken_english_test)
-
-            test_type = '/html/body/div[1]/form/div[4]/div[2]/div/div/div[3]/div/div/div/div/input'
-            self.set_value_list(test_type, 'IELTS')
-
-            test_date = '//*[@id="IPQ_APONEL4"]'
-            self.set_value(test_date, '01/Mar/2020')
-
-            overall_score = '//*[@id="IPQ_APONEL5"]'
-            self.set_value_list(overall_score, '7')
-            #upload english test result
-        else:
-            self.check_button(no_english_test)
-
-            scheduled_test = '//*[@id="IPQ_APONEL10A"]'
-            not_scheduled_test = '//*[@id="IPQ_APONEL10B"]'
-            self.check_button(not_scheduled_test)
-
-            tertiary_edu_accessed_in_english = '//*[@id="IPQ_APONEL12A1"]'
-            not_tertiary_edu_accessed_in_english = '//*[@id="IPQ_APONEL12A2"]'
-            self.check_button(not_tertiary_edu_accessed_in_english)
-
-            scheduled_test1 = '//*[@id="IPQ_APONEL16A"]'
-            not_scheduled_test1 = '//*[@id="IPQ_APONEL16B"]'
-            self.check_button(not_scheduled_test1)
-
-        #record of exclusion
-        suspended_course = '//*[@id="IPQ_APONRE1A"]'
-        no_suspended_course = '//*[@id="IPQ_APONRE1B"]'
-        self.check_button(no_suspended_course)
-
-        asked_cause = '//*[@id="IPQ_APONRE2A"]'
-        no_asked_cause = '//*[@id="IPQ_APONRE2B"]'
-        self.check_button(no_asked_cause)
-
-        asked_explain = '//*[@id="IPQ_APONRE3A"]'
-        no_asked_explain = '//*[@id="IPQ_APONRE3B"]'
-        self.check_button(no_asked_explain)
-
-        #upload docs for cause exclusion
-
-        #high qualification
-        edu_level = '/html/body/div[1]/form/div[8]/div[2]/div/div/div/div/div/div/div/input'
-        self.set_value_list(edu_level, 'Secondary Qualification')
-
-        #upload you docs
-
-        # Secondary school studies
-        secondary_edu = qualification.loc[0].values.flatten().tolist()
-        secondary_qual_name = '//*[@id="IPQ_APONSS1"]'
-        self.set_value(secondary_qual_name, secondary_edu[1])
-        secondary_qual_state = '//*[@id="IPQ_APONSS2"]'
-        self.set_value(secondary_qual_state, secondary_edu[3])
-
-        year = re.search('20\d\d', secondary_edu[0])
-        if year:
-            secondary_qual_year = '/html/body/div[1]/form/div[9]/div[2]/div/div/div[3]/div/div/div/div/input'
-            self.set_value_list(secondary_qual_year, year.group())
-
-        secondary_qual_score = '//*[@id="IPQ_APMOTHRS"]'
-        self.set_value(secondary_qual_score, secondary_edu[4])
-
-        # Academic school studies
-        if (qualification.shape[0] > 1) and qualification['School'].tolist()[1]:
-            tertiary_edu = qualification.loc[1].values.flatten().tolist()
-
-            academic_qual_name = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[1]/div/div/div/div/input'
-            self.set_value_list(academic_qual_name, 'Bachelors degree')
-
-            academic_qual_course = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[2]/div/input'
-            self.set_value(academic_qual_course, tertiary_edu[2])
-
-            academic_qual_institution = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[3]/div/input'
-            self.set_value(academic_qual_institution, tertiary_edu[1])
-
-            academic_qual_country = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[4]/div/div/div/div/input'
-            self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
-
-            d1,d2 = self.get_date_range(tertiary_edu[0])
-            academic_qual_start_date = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[5]/div/div/input'
-            self.set_value(academic_qual_start_date, d1)
-
-            academic_qual_end_date = '/html/body/div[1]/form/div[10]qualification/div[2]/div/div/div[6]/div/div/input'
-            self.set_value(academic_qual_end_date, d2)
-
-            academic_qual_length = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[7]/div/input'
-            self.set_value(academic_qual_length, '')
-
-            academic_qual_grade = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[8]/div/input'
-            self.set_value(academic_qual_grade, tertiary_edu[4])
-
-            academic_qual_completed = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[9]/div/div[1]/label/input'
-            self.check_button(academic_qual_completed)
-
-            academic_qual_parttime = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[10]/div/div[1]/label/input'
-            self.check_button(academic_qual_parttime)
-
-            if (qualification.shape[0] > 2) and qualification['School'].tolist()[2]:
-                print('Add another qualification')
-                another_qual = '/html/body/div[1]/form/div[10]/div[2]/div/div/div[11]/div/div/label/input'
-                self.check_button(another_qual)
-
-                tertiary_edu = qualification.loc[2].values.flatten().tolist()
-
-                academic_qual_name = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[1]/div/div/div/div/input'
-                self.set_value_list(academic_qual_name, 'Bachelors degree')
-
-                academic_qual_course = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[2]/div/input'
-                self.set_value(academic_qual_course, tertiary_edu[2])
-
-                academic_qual_institution = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[3]/div/input'
-                self.set_value(academic_qual_institution, tertiary_edu[1])
-
-                academic_qual_country = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[4]/div/div/div/div/input'
-                self.set_value_list(academic_qual_country, self.get_country_code(tertiary_edu[3]))
-
-
-                d1,d2 = self.get_date_range(tertiary_edu[0])
-                academic_qual_start_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[5]/div/div/input'
-                self.set_value(academic_qual_start_date, d1)
-
-                academic_qual_end_date = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[6]/div/div/input'
-                self.set_value(academic_qual_end_date, d2)
-
-                academic_qual_length = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[7]/div/input'
-                self.set_value(academic_qual_length, '')
-
-                academic_qual_grade = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[8]/div/input'
-                self.set_value(academic_qual_grade, tertiary_edu[4])
-
-                academic_qual_completed = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[9]/div/div[1]/label/input'
-                self.check_button(academic_qual_completed)
-
-                academic_qual_parttime = '/html/body/div[1]/form/div[11]/div[2]/div/div/div[10]/div/div[1]/label/input'
-                self.check_button(academic_qual_parttime)
-
-
-        app_for_cred = '//*[@id="applyForCredit"]'
-        no_app_for_cred = '//*[@id="doNotApplyForCredit"]'
-        driver.find_element("xpath", no_app_for_cred).click()
+        QualificationsSecondSchoolStudies(self.driver, self.data).run()
+        QualificationsAcademicQualifications(self.driver, self.data).run()
+        QualificationsLanguageProficiency(self.driver, self.data).run()
+        QualificationsRecordOfExclusions(self.driver, self.data).run()
+        QualificationsSecondSchoolStudies(self.driver, self.data).run()
 
     def fill_further_references(self):
         print('>>> reference info: ')
@@ -459,7 +302,7 @@ class mod1(form_base):
             self.search_course()
 
         # create profile
-        elif re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_ipp_lgn.login?.+', url):
+        elif re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/SIW_YMHD.start_url?.+', url):
             self.create_profile()
 
         # email payment
@@ -473,4 +316,3 @@ class mod1(form_base):
             print('no actions for: ', url)
             pass
 
-    
