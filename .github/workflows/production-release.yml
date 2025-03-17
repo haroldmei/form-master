@@ -27,7 +27,7 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          $version = '0.1.15'  # Replace with your version extraction logic
+          $version = '0.1.17'  # Replace with your version extraction logic
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
       
       - name: Build Python package
