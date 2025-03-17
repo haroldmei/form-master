@@ -58,8 +58,6 @@ jobs:
         with:
           files: |
             dist/*.exe
-            dist/*.whl
-            dist/*.tar.gz
           tag_name: ${{ github.ref_name }}
           name: FormMaster ${{ steps.get_version.outputs.VERSION }}
           draft: false
