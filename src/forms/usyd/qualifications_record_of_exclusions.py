@@ -47,8 +47,10 @@
 '''
 
 import re
-from selenium.webdriver.common.by import By
-from forms.utils.form_utils import check_button_by_id
+from selenium.webdriver.common.by import By 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from forms.utils.form_utils import set_value_by_id, select_option_by_id, ensure_radio_selected
 
 class QualificationsRecordOfExclusions:
     def __init__(self, driver, data):
@@ -63,20 +65,20 @@ class QualificationsRecordOfExclusions:
         # Question 1: Ever been excluded or suspended
         excluded_or_suspended = personal_info.get('excluded_or_suspended', False)
         if excluded_or_suspended:
-            check_button_by_id(driver, "IPQ_APONRE1A")  # Yes
+            ensure_radio_selected(driver, "IPQ_APONRE1A")  # Yes
         else:
-            check_button_by_id(driver, "IPQ_APONRE1B")  # No
+            ensure_radio_selected(driver, "IPQ_APONRE1B")  # No
         
         # Question 2: Ever been asked to show cause
         asked_to_show_cause = personal_info.get('asked_to_show_cause', False)
         if asked_to_show_cause:
-            check_button_by_id(driver, "IPQ_APONRE2A")  # Yes
+            ensure_radio_selected(driver, "IPQ_APONRE2A")  # Yes
         else:
-            check_button_by_id(driver, "IPQ_APONRE2B")  # No
+            ensure_radio_selected(driver, "IPQ_APONRE2B")  # No
         
         # Question 3: Ever been asked to explain unsatisfactory progress
         unsatisfactory_progress = personal_info.get('unsatisfactory_progress', False)
         if unsatisfactory_progress:
-            check_button_by_id(driver, "IPQ_APONRE3A")  # Yes
+            ensure_radio_selected(driver, "IPQ_APONRE3A")  # Yes
         else:
-            check_button_by_id(driver, "IPQ_APONRE3B")  # No
+            ensure_radio_selected(driver, "IPQ_APONRE3B")  # No

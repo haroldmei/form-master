@@ -105,12 +105,14 @@ import re
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from forms.utils.form_utils import set_value_by_id, select_option_by_id
+from forms.utils.form_utils import set_value_by_id, select_option_by_id, select_chosen_option_by_id
+from logger import get_logger
 
 class PersonalInfoDetails:
     def __init__(self, driver, data):
         self.driver = driver
         self.data = data
+        self.logger = get_logger('PersonalInfoDetails')
 
     def run(self):
         students = self.data
@@ -119,19 +121,18 @@ class PersonalInfoDetails:
         
         # Title selection based on gender (required field)
         gender = personal_info.get('Gender', 'Male')
-        title = personal_info.get('Title', '')
-        
-        if not title:
-            # Default titles based on gender if not specified
-            if gender.lower() == 'male':
-                title = 'Mr'
-            elif gender.lower() == 'female':
-                title = 'Miss'
-            else:
-                title = 'Mx'
+        # Default titles based on gender if not specified
+        if gender.lower() == 'male' or gender.lower() == 'm':
+            title = 'Mr'
+        elif gender.lower() == 'female' or gender.lower() == 'f':
+            title = 'Miss'
+        else:
+            title = 'Mx'
                 
-        select_option_by_id(driver, "IPR_TITL", title)
-        
+        #select_option_by_id(driver, "IPR_TITL", title)
+        select_chosen_option_by_id(driver, "IPR_TITL", title)
+        self.logger.info(f"Selected title: {title}")
+
         # Given names (first is required)
         given_name = personal_info.get('Given Name', '')
         if not given_name:
@@ -156,13 +157,12 @@ class PersonalInfoDetails:
         set_value_by_id(driver, "IPQ_APONPRVS", personal_info.get('Previous Name', ''))
         
         # Official name (required) - use full name if not specified
-        official_name = f"{personal_info['Given Name']} {personal_info['Family Name']}"
-        if not official_name:
-            official_name = f"{given_name} {family_name}"
-        set_value_by_id(driver, "IPQ_APONOFFN", official_name)
+        set_value_by_id(driver, "IPQ_APONOFFN", f"{given_name} {family_name}")
+        self.logger.info(f"Official name: {given_name} {family_name}")
         
         # Gender selection (required)
         select_option_by_id(driver, "IPR_GEND", gender)
+        self.logger.info(f"Gender: {gender}")
         
         # Date of birth (required)
         dob = personal_info.get('DOB', '')

@@ -11,20 +11,17 @@ from selenium.webdriver import Firefox, FirefoxOptions
 from threading import Lock
 
 from pynput.mouse import Listener as MouseListener
-from pynput.keyboard import Listener as KeyboardListener
 
 from etl import load
 from forms.mod1 import mod1
 from forms.mod2 import mod2
+from logger import get_logger
 
 import os
 import argparse
 import subprocess
 import socket
 import time
-import sys
-import logging
-from datetime import datetime
 
 lock = Lock()
 is_win = (True if os.name == 'nt' else False)
@@ -34,36 +31,7 @@ driver = None
 run_mode = 0
 logger = None
 
-# Setup logging
-def setup_logging():
-    global logger
-    # Create a timestamp for the log filename
-    timestamp = datetime.now().strftime("%y_%m_%d_%H_%M_%S")
-    log_filename = f"formmaster_{timestamp}.log"
-    log_filename = os.path.join(os.environ.get('USERPROFILE', ''), '.formmaster', log_filename)
-
-    # Configure logging with encoding specified for file handler
-    # Set up root logger
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    
-    # Create formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    # File handler with UTF-8 encoding
-    file_handler = logging.FileHandler(log_filename, encoding='utf-8')
-    file_handler.setFormatter(formatter)
-    root_logger.addHandler(file_handler)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    root_logger.addHandler(console_handler)
-    
-    # Create logger for this module
-    logger = logging.getLogger('formmaster')
-    logger.info(f"Logging setup complete. Log file: {log_filename}")
-    return logger
+# Setup logging function removed - now using logger.py
 
 def on_click(x, y, button, pressed):
     global main_application_handle
@@ -90,7 +58,7 @@ def on_click(x, y, button, pressed):
                 return
     except Exception as e:
         logger.error(f"Error in on_click: {e}")
-        os._exit(1)  # Force exit since we're in a threaded context
+        # os._exit(1)  # Force exit since we're in a threaded context
 
 def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei/data/13. 懿心ONE Bonnie'), uni = 'usyd', mode = 0):
     global main_application_handle
@@ -99,8 +67,8 @@ def run(dir = ('C:\\work\\data\\13. 懿心ONE Bonnie' if is_win else '/home/hmei
     global run_mode
     global logger
     
-    # Setup logging
-    logger = setup_logging()
+    # Setup logging using the centralized logger
+    logger = get_logger()
     
     run_mode = mode
 

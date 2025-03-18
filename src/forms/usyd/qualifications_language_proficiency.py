@@ -1,23 +1,5 @@
 '''
-<div class="sv-panel sv-panel-primary">
-				<div class="sv-panel-heading">
-					<h2 class="sv-panel-title">English language proficiency</h2>
-				</div>
-				<div class="sv-panel-body">
-					All applicants for University of Sydney courses need to meet the relevant English language requirements.
-					<ul>
-						<li><a href="http://sydney.edu.au/future_students/international_undergraduate/admissions/entry_requirements/english_language.shtml" target="_blank">International applicant English language proficiency requirements</a></li>
-						<li><a href="http://sydney.edu.au/future_students/domestic_undergraduate/admissions/entry_requirements/language_proficiency.shtml" target="_blank">Domestic applicant English language proficiency requirements</a></li>
-						<li><a href="http://sydney.edu.au/future-students/study-abroad-exchange/admission/english-language.shtml" target="_blank">Study Abroad and Exchange Program English language proficiency requirements</a></li>
-					</ul>
-					You can demonstrate your English language proficiency through:
-					<ul>
-						<li>Completion of an approved English language test, with results that meet the minimum standards required for your preferred course, or</li>
-						<li>A record of satisfactory achievement in previous studies in which the language of instruction, examination and assessment was English, or</li>
-						<li>Successful completion of an approved course of study at the University of Sydney Centre for English Teaching (CET), with results that meet the minimum standards required for your preferred course.</li>
-					</ul>
-					<div class="sv-form-container">
-						<div class="sv-form-horizontal">
+<div class="sv-form-horizontal">
 							<div class="sv-form-group">
 								<label class="sv-col-md-3 sv-control-label">Is English your first language? *</label>
 								<div class="sv-col-md-4">
@@ -25,18 +7,18 @@
 									<div class="sv-radio"><label><input name="IPQ_APONEL1" id="IPQ_APONEL1A" type="radio" value="Y" onclick="check_IPQ_APONEL1();">&nbsp;Yes</label></div>
 									
 									
-									<div class="sv-radio"><label><input name="IPQ_APONEL1" id="IPQ_APONEL1B" type="radio" value="N" onclick="check_IPQ_APONEL1();">&nbsp;No</label></div>
+									<div class="sv-radio"><label><input name="IPQ_APONEL1" id="IPQ_APONEL1B" type="radio" value="N" onclick="check_IPQ_APONEL1();" data-gtm-form-interact-field-id="0">&nbsp;No</label></div>
 									
 								</div>
 							</div>
-							<div class="sv-form-group" id="section1a" style="display:none">
+							<div class="sv-form-group" id="section1a" style="">
 								<label class="sv-col-md-3 sv-control-label">Have you taken an English language proficiency test within the last two years? *</label>
 								<div class="sv-col-md-4">
 									
 									<div class="sv-radio"><label><input name="IPQ_APONEL2" id="IPQ_APONEL2A" type="radio" value="Y" onclick="check_IPQ_APONEL2();">&nbsp;Yes</label></div>
 									
 									
-									<div class="sv-radio"><label><input name="IPQ_APONEL2" id="IPQ_APONEL2B" type="radio" value="N" onclick="check_IPQ_APONEL2();">&nbsp;No</label></div>
+									<div class="sv-radio"><label><input name="IPQ_APONEL2" id="IPQ_APONEL2B" type="radio" value="N" onclick="check_IPQ_APONEL2();" data-gtm-form-interact-field-id="1">&nbsp;No</label></div>
 									
 								</div>
 							</div>
@@ -84,14 +66,14 @@
 									<input name="IPQ_APONEL5A" id="IPQ_APONEL5A" class="sv-form-control" type="text" maxlength="30" value="">
 								</div>
 							</div>
-							<div class="sv-form-group" id="section1b" style="display:none">
+							<div class="sv-form-group" id="section1b" style="">
 								<label class="sv-col-md-3 sv-control-label">Have you scheduled to sit an English language proficiency test? *</label>
 								<div class="sv-col-md-4">
 									
 									<div class="sv-radio"><label><input name="IPQ_APONEL10" id="IPQ_APONEL10A" type="radio" value="Y" onclick="check_IPQ_APONEL10();">&nbsp;Yes</label></div>
 									
 									
-									<div class="sv-radio"><label><input name="IPQ_APONEL10" id="IPQ_APONEL10B" type="radio" value="N" onclick="check_IPQ_APONEL10();">&nbsp;No</label></div>
+									<div class="sv-radio"><label><input name="IPQ_APONEL10" id="IPQ_APONEL10B" type="radio" value="N" onclick="check_IPQ_APONEL10();" data-gtm-form-interact-field-id="6">&nbsp;No</label></div>
 									
 								</div>
 							</div>
@@ -127,14 +109,14 @@
 									</div>
 								</div>
 							</div>
-							<div class="sv-form-group" id="section1c" style="display:none">
+							<div class="sv-form-group" id="section1c" style="">
 								<label class="sv-col-md-3 sv-control-label">Have you completed secondary or tertiary studies that were taught, examined and assessed entirely in English within the last five years? *</label>
 								<div class="sv-col-md-4">
 									
 									<div class="sv-radio"><label><input name="IPQ_APONEL12A" id="IPQ_APONEL12A1" type="radio" value="Y" onclick="check_IPQ_APONEL12();">&nbsp;Yes</label></div>
 									
 									
-									<div class="sv-radio"><label><input name="IPQ_APONEL12A" id="IPQ_APONEL12A2" type="radio" value="N" onclick="check_IPQ_APONEL12();">&nbsp;No</label></div>
+									<div class="sv-radio"><label><input name="IPQ_APONEL12A" id="IPQ_APONEL12A2" type="radio" value="N" onclick="check_IPQ_APONEL12();" data-gtm-form-interact-field-id="7">&nbsp;No</label></div>
 									
 								</div>
 							</div>
@@ -177,44 +159,41 @@
   </div>
   <ul class="chosen-results" role="listbox" tabindex="-1" aria-expanded="false" id="IPQ_APONEL14_ul" aria-busy="true" aria-label="In which country? * options"></ul>
 </div></div>
-						<script type="text/javascript">
-							// Set the initial value of IPQ_APONEL14
-							$('#IPQ_APONEL14').val('');
-							sits_chosen_widget('#IPQ_APONEL14',{});
-						</script>
-					</div>
-				</div>
-				<div class="sv-form-group" id="section1c3" style="display: none;">
-					<label for="IPQ_APONEL15" class="sv-col-md-3 sv-control-label">Date completed (dd/mm/yyyy) *</label>
-					<div class="sv-col-md-4">
-						<div class="sv-input-group">
-							<input name="IPQ_APONEL15" id="IPQ_APONEL15" class="sv-form-control hasDatepicker" type="text" maxlength="30" value="">
-							<span class="sv-input-group-addon"><img class="ui-datepicker-trigger" src="../images/si_calendar.gif" alt="..." title="..." role="button" tabindex="0"></span>
+									<script type="text/javascript">
+										// Set the initial value of IPQ_APONEL14
+										$('#IPQ_APONEL14').val('');
+										sits_chosen_widget('#IPQ_APONEL14',{});
+									</script>
+								</div>
+							</div>
+							<div class="sv-form-group" id="section1c3" style="display: none;">
+								<label for="IPQ_APONEL15" class="sv-col-md-3 sv-control-label">Date completed (dd/mm/yyyy) *</label>
+								<div class="sv-col-md-4">
+									<div class="sv-input-group">
+										<input name="IPQ_APONEL15" id="IPQ_APONEL15" class="sv-form-control hasDatepicker" type="text" maxlength="30" value="">
+										<span class="sv-input-group-addon"><img class="ui-datepicker-trigger" src="../images/si_calendar.gif" alt="..." title="..." role="button" tabindex="0"></span>
+									</div>
+								</div>
+							</div>
+							<div class="sv-form-group" id="section1d" style="">
+								<label class="sv-col-md-3 sv-control-label">Have you scheduled to sit an English language proficiency test? *</label>
+								<div class="sv-col-md-4">
+									
+									<div class="sv-radio"><label><input name="IPQ_APONEL16" id="IPQ_APONEL16A" type="radio" value="Y">&nbsp;Yes</label></div>
+									
+									
+									<div class="sv-radio"><label><input name="IPQ_APONEL16" id="IPQ_APONEL16B" type="radio" value="N" data-gtm-form-interact-field-id="8">&nbsp;No</label></div>
+									
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
-				<div class="sv-form-group" id="section1d" style="display:none">
-					<label class="sv-col-md-3 sv-control-label">Have you scheduled to sit an English language proficiency test? *</label>
-					<div class="sv-col-md-4">
-						
-						<div class="sv-radio"><label><input name="IPQ_APONEL16" id="IPQ_APONEL16A" type="radio" value="Y">&nbsp;Yes</label></div>
-						
-						
-						<div class="sv-radio"><label><input name="IPQ_APONEL16" id="IPQ_APONEL16B" type="radio" value="N">&nbsp;No</label></div>
-						
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>'
 '''
 
 import re
 from selenium.webdriver.common.by import By 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from forms.utils.form_utils import set_value_by_id, select_option_by_id, check_button_by_id
+from forms.utils.form_utils import set_value_by_id, select_option_by_id, ensure_radio_selected
 
 class QualificationsLanguageProficiency:
     def __init__(self, driver, data):
@@ -231,19 +210,25 @@ class QualificationsLanguageProficiency:
         
         if is_first_language:
             # Select "Yes" for English as first language
-            check_button_by_id(driver, "IPQ_APONEL1A")
+            ensure_radio_selected(driver, "IPQ_APONEL1A")
             
             # Wait for the English language proficiency test field to appear
             WebDriverWait(driver, 10).until(
                 EC.visibility_of_element_located((By.ID, "section1a"))
             )
             
+        else:
+            # Select "No" for English as first language
+            ensure_radio_selected(driver, "IPQ_APONEL1B")
+            
+            # The rest of the form logic would continue here based on the user's choices
+            
             # Check if the student has taken an English language proficiency test
             has_taken_test = personal_info.get('has_taken_test', False)
             
             if has_taken_test:
                 # Select "Yes" for having taken an English language proficiency test
-                check_button_by_id(driver, "IPQ_APONEL2A")
+                ensure_radio_selected(driver, "IPQ_APONEL2A")
                 
                 # Wait for the test name field to appear
                 WebDriverWait(driver, 10).until(
@@ -276,10 +261,25 @@ class QualificationsLanguageProficiency:
                 
             else:
                 # Select "No" for having taken a test
-                check_button_by_id(driver, "IPQ_APONEL2B")
-        else:
-            # Select "No" for English as first language
-            check_button_by_id(driver, "IPQ_APONEL1B")
-            
-            # The rest of the form logic would continue here based on the user's choices
+                ensure_radio_selected(driver, "IPQ_APONEL2B")
+                
+                scheduled_test = personal_info.get('scheduled_test', False)
+                if scheduled_test:
+                    ensure_radio_selected(driver, "IPQ_APONEL10A")
+                else:
+                    ensure_radio_selected(driver, "IPQ_APONEL10B")
+                     
+                    secondary_in_english = personal_info.get('secondary_in_english', False)
+                    if secondary_in_english:
+                        ensure_radio_selected(driver, "IPQ_APONEL12A1")
+                    else:
+                        ensure_radio_selected(driver, "IPQ_APONEL12A2")
+                        
+                        scheduled_proficiency_test = personal_info.get('scheduled_proficiency_test', False)
+                        if scheduled_proficiency_test:
+                            ensure_radio_selected(driver, "IPQ_APONEL16A")    
+                        else:
+                            ensure_radio_selected(driver, "IPQ_APONEL16B")
+                            
+                    
 

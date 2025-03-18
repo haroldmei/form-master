@@ -35,7 +35,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from forms.utils.form_utils import set_value_by_id, select_option_by_id, check_button_by_id, is_element_visible
+from forms.utils.form_utils import set_value_by_id, ensure_radio_selected
 
 class Scholarships:
     def __init__(self, driver, data):
@@ -52,7 +52,7 @@ class Scholarships:
         
         if has_scholarship:
             # Select "Yes" for scholarship awarded
-            check_button_by_id(driver, "IPQ_APONSH13A")
+            ensure_radio_selected(driver, "IPQ_APONSH13A")
             
             # Wait for the scholarship name field to appear
             try:
@@ -70,14 +70,14 @@ class Scholarships:
                 print("Warning: Scholarship name field did not appear after selecting Yes")
         else:
             # Select "No" for scholarship awarded
-            check_button_by_id(driver, "IPQ_APONSH13B")
+            ensure_radio_selected(driver, "IPQ_APONSH13B")
         
         # Check if the student has applied for a pending scholarship
         has_pending_scholarship = personal_info.get('has_pending_scholarship', False)
         
         if has_pending_scholarship:
             # Select "Yes" for pending scholarship
-            check_button_by_id(driver, "IPQ_APONSH15A")
+            ensure_radio_selected(driver, "IPQ_APONSH15A")
             
             # Wait for the pending scholarship name field to appear
             try:
@@ -95,4 +95,5 @@ class Scholarships:
                 print("Warning: Pending scholarship name field did not appear after selecting Yes")
         else:
             # Select "No" for pending scholarship
-            check_button_by_id(driver, "IPQ_APONSH15B")
+            ensure_radio_selected(driver, "IPQ_APONSH15B")
+    

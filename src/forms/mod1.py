@@ -16,7 +16,7 @@ from forms.usyd.create_profile import CreateProfileForm
 from forms.usyd.personal_info_address import PersonalInfoAddress
 from forms.usyd.personal_info_address_perm import PersonalInfoAddressPerm
 from forms.usyd.personal_info_contact import PersonalInfoContact
-#from forms.usyd.personal_info_details import PersonalInfoDetails
+from forms.usyd.personal_info_details import PersonalInfoDetails
 from forms.usyd.personal_info_residency import PersonalInfoResidency
 from forms.usyd.personal_info_course_applications import PersonalInfoCouseApplications
 from forms.usyd.personal_info_enrollment import PersonalInfoEnrollment
@@ -28,6 +28,7 @@ from forms.usyd.qualifications_academic_qualifications import QualificationsAcad
 from forms.usyd.qualifications_language_proficiency import QualificationsLanguageProficiency
 from forms.usyd.qualifications_record_of_exclusions import QualificationsRecordOfExclusions
 from forms.usyd.qualifications_second_school_studies import QualificationsSecondSchoolStudies
+from forms.usyd.qualifications_highest_qualification_details import QualificationsHighestQualificationDetails
 
 from forms.usyd.scholarships import Scholarships
 from forms.usyd.login_form import LoginForm
@@ -177,6 +178,7 @@ class mod1(form_base):
         return self.main_application_handle
 
     def fill_personal_info(self):
+        PersonalInfoDetails(self.driver, self.data).run()
         PersonalInfoAddress(self.driver, self.data).run()
         PersonalInfoAddressPerm(self.driver, self.data).run()
         PersonalInfoContact(self.driver, self.data).run()
@@ -191,11 +193,12 @@ class mod1(form_base):
         Scholarships(self.driver, self.data).run()
     
     def fill_your_qualifications(self):
-        QualificationsSecondSchoolStudies(self.driver, self.data).run()
-        QualificationsAcademicQualifications(self.driver, self.data).run()
         QualificationsLanguageProficiency(self.driver, self.data).run()
         QualificationsRecordOfExclusions(self.driver, self.data).run()
+        QualificationsHighestQualificationDetails(self.driver, self.data).run()
         QualificationsSecondSchoolStudies(self.driver, self.data).run()
+        #QualificationsSecondSchoolStudies(self.driver, self.data).run()
+        #QualificationsAcademicQualifications(self.driver, self.data).run()
 
     def fill_further_references(self):
         print('>>> reference info: ')
