@@ -6,8 +6,6 @@ import os
 import string
 import re
 
-# document = Document('/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/曾政源-澳洲大学申请信息表2023.docx')
-
 def extract_eng(s):
     s = s + ' '
 
@@ -30,20 +28,24 @@ def get_school(a):
                 return True
         return False
     
-    if match_school(a, ["悉尼大学", "Taylor's college"]):
-        return "Sydney"
-    elif match_school(a, ["昆士兰大学", "Queen’s college"]):
-        return "Queensland"
-    elif match_school(a, ["新南威尔士大学", "UNSW global"]):
+    if match_school(a, ["悉尼大学", "Taylor's college", "USYD"]):
+        return "USYD"
+    elif match_school(a, ["昆士兰大学", "Queen’s college", "UQ"]):
+        return "UQ"
+    elif match_school(a, ["新南威尔士大学", "UNSW global", "UNSW"]):
         return "UNSW"
     elif match_school(a, ["莫纳什大学", "Monash"]):
         return "Monash"
+    elif match_school(a, ["墨尔本大学", "UNIMELB"]):
+        return "UNIMELB"
+    elif match_school(a, ["国立大学", "ANU"]):
+        return "ANU"
     else:
         return "Other"
 
 def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/曾政源-澳洲大学申请信息表2023.docx'):
     document = Document(f'{app_tbl}')
-    data = {}
+    data = {'Number': 0}
     for table in document.tables[:2]:
         for i, row in enumerate(table.rows):
             text = (cell.text for cell in row.cells)
@@ -68,11 +70,11 @@ def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/�
                         line1 = ', '.join(addr_parts[:-4])
                     else:
                         line1 = addr_parts[0]
+                        line2 = ''
                         if len(addr_parts) >= 4:
                             line2 = addr_parts[1]
                         line3 = ''
                     data.update({'province': province, 'city': city, 'line1': line1, 'line2': line2, 'line3': line3})
-
 
     df_personal = pd.DataFrame.from_dict({'keys': data.keys(), 'values': data.values()})
 
@@ -96,27 +98,29 @@ def load_table(app_tbl = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/�
     df_application['CRICOS'] = df_application['CRICOS'].apply(lambda a: extract_eng(a))
     df_application['Commencement Date(mm/yyyy)'] = df_application['Commencement Date(mm/yyyy)'].apply(lambda a: extract_eng(a))
 
-    return data, df_edu, df_application, df_personal
+    return [data, df_edu, df_application, df_personal]
 
 def load_ielts(app_file = '/home/hmei/data/13. 懿心ONE Bonnie/0209 曾政源/'):
     return
 
 def load(_dir):
-    dirs = glob(f"{_dir}/*")
     students = []
-    for d in dirs:
-        if not os.path.isdir(d):
-            continue
+    if os.path.isdir(_dir):
+        files = glob(f'{_dir}/**', recursive=True)
+    else:
+        files = [_dir]
 
-        files = glob(f'{d}/*澳洲大学申请信息表*.*')
-        if len(files) <= 0:
-            files = glob(f'{d}/*Application Form for AU University*.*')
-            if len(files) <= 0:
-                print(f'no table found in {d}')
-                continue
-        if len(files) == 1:
-            print(files[0])
-            student = load_table(files[0])
-            students.append(student)
+    for file in files:
+        if re.search('Application Form for AU University', file) or re.search('澳洲大学申请信息表', file):
+            print(file)
+            try:
+                student = load_table(file)
+                students.append(student)
+            except Exception as e:
+                print(str(e))
+                print(f'Failed to load file {file}.')
+
+
     
     return students
+
