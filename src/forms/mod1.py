@@ -7,9 +7,7 @@ from .base import form_base
 from getpass import getpass
 
 import sys
-import os
 import re
-import winreg
 import time
 
 from forms.usyd.create_profile import CreateProfileForm
@@ -32,6 +30,8 @@ from forms.usyd.qualifications_highest_qualification_details import Qualificatio
 
 from forms.usyd.scholarships import Scholarships
 from forms.usyd.login_form import LoginForm
+
+from forms.utils.form_extract import extract_and_save_form_controls
 
 class mod1(form_base):
     
@@ -227,6 +227,8 @@ class mod1(form_base):
         wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
         url = self.driver.current_url
 
+        extract_and_save_form_controls(self.driver)
+        
         if re.search('https://sydneystudent.sydney.edu.au/sitsvision/wrd/siw_ipp_cgi.start?', url):
             if not self.fill_form():
                 sys.exit()
