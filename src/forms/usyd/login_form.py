@@ -66,7 +66,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from logger import get_logger
+from forms.utils.logger import get_logger
 
 class LoginForm:
     def __init__(self, driver, data):
