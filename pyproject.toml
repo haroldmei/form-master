@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "formmaster"
-version = "0.1.18"
+version = "0.1.19"
 authors = [
     {name = "FormMaster Team", email = "maintainer@example.com"},
 ]
@@ -29,7 +29,7 @@ formmaster = "formfiller:run"
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["forms"]  # Explicitly include the forms package
-py-modules = ["formfiller", "etl"]
+py-modules = ["formfiller", "etl", "logger"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["src/requirements.txt"]}
