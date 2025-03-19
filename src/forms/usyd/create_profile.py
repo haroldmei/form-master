@@ -31,7 +31,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from forms.utils.form_utils import set_value_by_id, select_option_by_id, check_button_by_id, select_radio_by_value
-from logger import get_logger
+from forms.utils.logger import get_logger
 
 class CreateProfileForm:
     def __init__(self, driver, data):

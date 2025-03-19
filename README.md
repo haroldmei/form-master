@@ -118,6 +118,19 @@ To upload the package to PyPI:
    python -m twine upload dist/*
    ```
 
+### Release
+
+1. Versioning
+```bash
+python increment_version.py
+```
+
+2. Tagging
+```bash
+git tag -a v0.1.21 -m "FormMaster version 0.1.21 release"
+git push origin v0.1.21
+```
+
 You will need to provide your PyPI credentials during upload. Alternatively, create a `.pypirc` file in your home directory:
 
 ## Documentation
