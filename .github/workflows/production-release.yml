@@ -27,20 +27,12 @@ jobs:
       - name: Extract version
         id: get_version
         run: |
-          $version = '0.1.23'  # Replace with your version extraction logic
+          $version = '0.1.24'  # Replace with your version extraction logic
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
       
       - name: Build Python package
         run: |
           python -m build
-      
-      - name: Publish to PyPI
-        if: github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main'
-        env:
-          TWINE_USERNAME: "__token__"
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          twine upload dist/*
       
       - name: Install NSIS
         run: |
