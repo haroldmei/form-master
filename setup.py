@@ -8,7 +8,7 @@ with open("src/requirements.txt", "r", encoding="utf-8") as fh:
 
 setup(
     name="formmaster",
-    version="0.1.18",
+    version="0.1.27",
     author="FormMaster Team",
     author_email="maintainer@example.com",
     description="Form automation tool for Australian university application processes",
@@ -30,7 +30,7 @@ setup(
     package_dir={"": "src"},
     # Include both modules and packages
     packages=find_packages(where="src"),
-    py_modules=["formfiller", "etl"],
+    py_modules=["formfiller"],
     python_requires=">=3.11,<3.12",
     install_requires=requirements,
     entry_points={
