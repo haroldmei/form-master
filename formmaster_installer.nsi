@@ -2,7 +2,7 @@
 Unicode true
 
 !define APPNAME "FormMaster"
-!define VERSION "0.1.22"
+!define VERSION "0.1.23"
 !define PUBLISHER "FormMaster Team"
 !define WEBSITE "https://your-website.com"
 !define SUPPORT_EMAIL "support@your-website.com"
